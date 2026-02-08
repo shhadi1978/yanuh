@@ -210,13 +210,21 @@ function renderRecords(data, append = false) {
                 </div>
                 
                 <!-- أزرار التحكم - محسّنة للجوال -->
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-2 gap-2 mb-2">
                     <button onclick="manageImages(${person.death_id})" class="flex flex-col items-center justify-center gap-2 bg-purple-500 hover:bg-purple-600 active:bg-purple-700 text-white py-4 px-3 rounded-xl font-bold text-sm transition-all active:scale-95">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span>الصور</span>
                     </button>
+                    <button onclick="manageComments(${person.death_id})" class="flex flex-col items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white py-4 px-3 rounded-xl font-bold text-sm transition-all active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                        </svg>
+                        <span>التعليقات</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
                     <button onclick="editRecord(${person.death_id})" class="flex flex-col items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white py-4 px-3 rounded-xl font-bold text-sm transition-all active:scale-95">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -548,6 +556,187 @@ async function deletePersonImage(imageId, fileName) {
 }
 
 // ==================== END IMAGES MANAGEMENT ====================
+
+// ==================== COMMENTS MANAGEMENT ====================
+
+let currentPersonComments = [];
+let currentCommentPersonData = null;
+
+// Manage comments for specific person
+async function manageComments(deathId) {
+    console.log('💬 Managing comments for person:', deathId);
+    
+    // Load person data
+    const { data: person, error: personError } = await supabaseClient
+        .from('death')
+        .select('*')
+        .eq('death_id', deathId)
+        .single();
+    
+    if (personError || !person) {
+        alert('خطأ في تحميل بيانات المتوفى');
+        return;
+    }
+    
+    currentCommentPersonData = person;
+    
+    // Load person's comments
+    const { data: comments, error: commentsError } = await supabaseClient
+        .from('comments')
+        .select('*')
+        .eq('id_death', deathId)
+        .order('created_at', { ascending: false });
+    
+    if (commentsError) {
+        console.error('Error loading comments:', commentsError);
+        currentPersonComments = [];
+    } else {
+        currentPersonComments = comments || [];
+    }
+    
+    showCommentsManagementModal(person);
+}
+
+// Show modal with comments management
+function showCommentsManagementModal(person) {
+    const fullName = `${person.title || ''} ${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim();
+    
+    const pendingComments = currentPersonComments.filter(c => !c.display_comment);
+    const approvedComments = currentPersonComments.filter(c => c.display_comment);
+    
+    const commentsHTML = currentPersonComments.length > 0 ? currentPersonComments.map(comment => {
+        const date = new Date(comment.created_at).toLocaleDateString('ar');
+        const isApproved = comment.display_comment;
+        
+        // Build buttons based on comment status
+        let buttonsHtml = '';
+        if (isApproved) {
+            // For approved comments: only delete button
+            buttonsHtml = `
+                <button onclick="deletePersonComment(${comment.comment_id})" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-bold text-sm transition">
+                    🗑️ حذف التعليق
+                </button>
+            `;
+        } else {
+            // For pending comments: approve and delete buttons
+            buttonsHtml = `
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="approvePersonComment(${comment.comment_id})" class="bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-sm transition">
+                        ✓ موافقة
+                    </button>
+                    <button onclick="deletePersonComment(${comment.comment_id})" class="bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-bold text-sm transition">
+                        🗑️ حذف
+                    </button>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="bg-white rounded-xl border-2 ${isApproved ? 'border-green-200' : 'border-yellow-200'} p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500 font-medium">${date}</span>
+                        ${isApproved ? 
+                            '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">✓ معتمد</span>' : 
+                            '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-bold">⏳ معلق</span>'
+                        }
+                    </div>
+                    <div class="font-bold text-gray-900">${comment.author}</div>
+                </div>
+                <p class="text-gray-700 bg-gray-50 p-3 rounded-lg text-right leading-relaxed mb-3 text-sm">${comment.comment_text}</p>
+                ${buttonsHtml}
+            </div>
+        `;
+    }).join('') : '<div class="col-span-full text-center py-8 text-gray-500">لا توجد تعليقات لهذا المتوفى</div>';
+    
+    const modal = document.getElementById('modal');
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 sticky top-0 z-30">
+                <div class="flex items-center justify-between">
+                    <button onclick="closeModal()" class="bg-white/20 hover:bg-white/30 w-10 h-10 rounded-full flex items-center justify-center transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <div class="text-right">
+                        <h2 class="text-2xl font-bold">💬 إدارة التعليقات</h2>
+                        <p class="text-sm opacity-90">${fullName}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto" style="max-height: calc(90vh - 180px);">
+                <!-- Statistics -->
+                <div class="grid grid-cols-3 gap-3 mb-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-center">
+                        <div class="text-2xl font-bold text-indigo-600">${currentPersonComments.length}</div>
+                        <div class="text-xs text-gray-600">إجمالي</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 text-center">
+                        <div class="text-2xl font-bold text-green-600">${approvedComments.length}</div>
+                        <div class="text-xs text-gray-600">معتمدة</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4 text-center">
+                        <div class="text-2xl font-bold text-yellow-600">${pendingComments.length}</div>
+                        <div class="text-xs text-gray-600">معلقة</div>
+                    </div>
+                </div>
+                
+                <!-- Comments List -->
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 text-right">التعليقات (${currentPersonComments.length})</h3>
+                    <div class="space-y-3" id="personCommentsGrid">
+                        ${commentsHTML}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+    modal.onclick = closeModal;
+}
+
+// Approve comment for person
+async function approvePersonComment(commentId) {
+    const { error } = await supabaseClient
+        .from('comments')
+        .update({ display_comment: true })
+        .eq('comment_id', commentId);
+    
+    if (error) {
+        alert('حدث خطأ في الموافقة');
+        console.error(error);
+        return;
+    }
+    
+    // Refresh modal
+    manageComments(currentCommentPersonData.death_id);
+}
+
+// Delete comment for person
+async function deletePersonComment(commentId) {
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذا التعليق نهائياً؟\n\nلا يمكن التراجع عن هذا الإجراء!')) return;
+    
+    const { error } = await supabaseClient
+        .from('comments')
+        .delete()
+        .eq('comment_id', commentId);
+    
+    if (error) {
+        alert('حدث خطأ في الحذف');
+        console.error(error);
+        return;
+    }
+    
+    // Refresh modal
+    manageComments(currentCommentPersonData.death_id);
+}
+
+// ==================== END COMMENTS MANAGEMENT ====================
 
 async function loadRecords() {
     console.log('🔄 loadRecords called');

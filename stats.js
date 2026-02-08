@@ -60,7 +60,7 @@ function displaySummaryStats() {
     animateNumber('avgAge', avgAge);
 }
 
-// Display gender distribution with circles
+// Display gender distribution with a single pie chart
 function displayGenderDistribution() {
     const males = allDeceased.filter(p => p.gender === 'male').length;
     const females = allDeceased.filter(p => p.gender === 'female').length;
@@ -69,17 +69,50 @@ function displayGenderDistribution() {
     const malePercent = total > 0 ? Math.round((males / total) * 100) : 0;
     const femalePercent = total > 0 ? Math.round((females / total) * 100) : 0;
     
+    // Update text displays
     document.getElementById('malePercent').textContent = `${malePercent}%`;
     document.getElementById('femalePercent').textContent = `${femalePercent}%`;
+    document.getElementById('maleCount').textContent = males;
+    document.getElementById('femaleCount').textContent = females;
+    document.getElementById('totalCount').textContent = total;
     
-    // Animate circles
-    const circumference = 2 * Math.PI * 65;
-    const maleOffset = circumference - (circumference * malePercent / 100);
-    const femaleOffset = circumference - (circumference * femalePercent / 100);
+    // Create pie chart segments
+    const cx = 100;
+    const cy = 100;
+    const radius = 80;
     
+    // Calculate angles (in radians)
+    const maleAngle = (males / total) * 2 * Math.PI;
+    const femaleAngle = (females / total) * 2 * Math.PI;
+    
+    // Helper function to create arc path
+    function createArcPath(startAngle, endAngle) {
+        const x1 = cx + radius * Math.cos(startAngle);
+        const y1 = cy + radius * Math.sin(startAngle);
+        const x2 = cx + radius * Math.cos(endAngle);
+        const y2 = cy + radius * Math.sin(endAngle);
+        
+        const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+        
+        return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+    }
+    
+    // Female segment (starts from top, going clockwise)
+    const femaleStart = -Math.PI / 2; // Start from top (-90 degrees)
+    const femaleEnd = femaleStart + femaleAngle;
+    
+    // Male segment (continues after female)
+    const maleStart = femaleEnd;
+    const maleEnd = maleStart + maleAngle;
+    
+    // Animate the segments
     setTimeout(() => {
-        document.getElementById('maleCircle').style.strokeDashoffset = maleOffset;
-        document.getElementById('femaleCircle').style.strokeDashoffset = femaleOffset;
+        if (females > 0) {
+            document.getElementById('femaleSegment').setAttribute('d', createArcPath(femaleStart, femaleEnd));
+        }
+        if (males > 0) {
+            document.getElementById('maleSegment').setAttribute('d', createArcPath(maleStart, maleEnd));
+        }
     }, 300);
 }
 

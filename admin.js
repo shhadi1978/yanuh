@@ -17,7 +17,7 @@ let lastActivity = Date.now();
 
 // Check authentication
 function checkAuth() {
-    const userStr = localStorage.getItem('adminUser');
+    const userStr = sessionStorage.getItem('adminUser');
     if (!userStr) {
         window.location.href = 'login.html';
         return false;
@@ -96,7 +96,7 @@ function autoLogout() {
 
 // Logout
 function logout() {
-    localStorage.removeItem('adminUser');
+    sessionStorage.removeItem('adminUser');
     
     // Clear timers
     if (inactivityTimer) clearTimeout(inactivityTimer);

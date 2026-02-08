@@ -4,7 +4,7 @@ const SUPABASE_KEY = 'sb_publishable_Rcssx9MNIREdHWq27nOkWQ_ZvK5JPQV';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Check if already logged in
-if (localStorage.getItem('adminUser')) {
+if (sessionStorage.getItem('adminUser')) {
     window.location.href = 'admin.html';
 }
 
@@ -37,7 +37,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         }
         
         // Store user info (password never sent to client)
-        localStorage.setItem('adminUser', JSON.stringify(data.user));
+        sessionStorage.setItem('adminUser', JSON.stringify(data.user));
         window.location.href = 'admin.html';
         
     } catch (err) {

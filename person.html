@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المتوفى</title>    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="يانوح">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+        <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Tajawal', 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            color: #2d3748;
+        }
+        
+        :root {
+            --primary-dark: #1a202c;
+            --secondary-dark: #2d3748;
+            --border-color: #e2e8f0;
+        }
+        
+        .gallery-img {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .gallery-img:active {
+            transform: scale(0.95);
+        }
+        
+        .comment-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <button onclick="window.history.back()" class="flex items-center gap-2 text-gray-700 hover:text-gray-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span class="font-semibold" data-ar="رجوع" data-he="חזרה">رجوع</span>
+            </button>
+            
+            <button id="langToggle" style="display: none;" class="hidden px-4 py-2 text-sm rounded-lg border border-gray-300 font-semibold hover:bg-gray-50">עברית</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
+        <!-- Person Info Card -->
+        <div id="personInfo" class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="animate-pulse">
+                <div class="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+                <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+        </div>
+
+        <!-- Photos Gallery -->
+        <div class="mb-6">
+            <h3 class="text-xl font-bold mb-4 text-gray-900" data-ar="معرض الصور" data-he="גלריית תמונות">معرض الصور</h3>
+            <div id="photosGallery" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <!-- Photos will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="mb-6">
+            <h3 class="text-xl font-bold mb-4 text-gray-900" data-ar="الذكريات والتعليقات" data-he="זיכרונות ותגובות">الذكريات والتعليقات</h3>
+            
+            <!-- Add Comment Form -->
+            <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+                <input 
+                    type="text" 
+                    id="authorName" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 text-right"
+                    data-ar-placeholder="اسمك..."
+                    data-he-placeholder="שמך..."
+                    placeholder="اسمك...">
+                
+                <textarea 
+                    id="commentText" 
+                    rows="3" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg mb-3 text-right resize-none"
+                    data-ar-placeholder="شارك ذكرى أو تعليق..."
+                    data-he-placeholder="שתף זיכרון או תגובה..."
+                    placeholder="شارك ذكرى أو تعليق..."></textarea>
+                
+                <button 
+                    id="submitComment" 
+                    class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 active:scale-98"
+                    data-ar="إضافة تعليق"
+                    data-he="הוסף תגובה">
+                    إضافة تعليق
+                </button>
+            </div>
+
+            <!-- Comments List -->
+            <div id="commentsList">
+                <!-- Comments will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="person.js"></script>
+</body>
+</html>

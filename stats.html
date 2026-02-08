@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إحصائيات - يانوح</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="يانوح">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Tajawal', 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        @media (min-width: 768px) {
+            .stat-card {
+                padding: 2rem;
+                border-radius: 20px;
+            }
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        @media (min-width: 768px) {
+            .stat-number {
+                font-size: 3rem;
+            }
+        }
+        
+        .chart-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-bar {
+                border-radius: 8px;
+            }
+        }
+        
+        .chart-bar:hover {
+            opacity: 0.8;
+        }
+        
+        @media (min-width: 768px) {
+            .chart-bar:hover {
+                transform: scaleX(1.02);
+            }
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @media (min-width: 768px) {
+            .loading {
+                width: 50px;
+                height: 50px;
+                border-width: 5px;
+            }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Mobile-specific improvements */
+        @media (max-width: 767px) {
+            body {
+                background-attachment: fixed;
+            }
+            
+            .stat-icon {
+                font-size: 2.5rem !important;
+            }
+            
+            .chart-label {
+                font-size: 0.875rem;
+            }
+            
+            .year-label, .family-label {
+                font-size: 0.875rem;
+                width: 4rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-white/10 backdrop-blur-md text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-3 md:px-4 py-3 md:py-4">
+            <div class="flex items-center justify-between gap-2">
+                <a href="index.html" class="bg-white/20 hover:bg-white/30 px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-semibold transition">
+                    🏠 <span class="hidden sm:inline">الصفحة الرئيسية</span>
+                </a>
+                <div class="text-right">
+                    <h1 class="text-lg md:text-2xl font-bold">📊 إحصائيات</h1>
+                    <p class="text-xs md:text-sm opacity-90">قرية يانوح</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="fixed inset-0 bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center z-50">
+        <div class="text-center text-white px-4">
+            <div class="loading mb-4"></div>
+            <p class="text-base md:text-xl font-bold">جارٍ تحميل الإحصائيات...</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-3 md:px-4 py-4 md:py-8" id="statsContent" style="display: none;">
+        
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-4 md:mb-8">
+            <!-- Total Deaths -->
+            <div class="stat-card text-center">
+                <div class="text-3xl md:text-5xl mb-2 md:mb-3 stat-icon">👥</div>
+                <div class="stat-number" id="totalDeaths">0</div>
+                <p class="text-gray-600 text-xs md:text-base font-semibold mt-1 md:mt-2">إجمالي الوفيات</p>
+            </div>
+            
+            <!-- Males -->
+            <div class="stat-card text-center">
+                <div class="text-3xl md:text-5xl mb-2 md:mb-3 stat-icon">👨</div>
+                <div class="stat-number text-blue-600" id="totalMales">0</div>
+                <p class="text-gray-600 text-xs md:text-base font-semibold mt-1 md:mt-2">ذكور</p>
+            </div>
+            
+            <!-- Females -->
+            <div class="stat-card text-center">
+                <div class="text-3xl md:text-5xl mb-2 md:mb-3 stat-icon">👩</div>
+                <div class="stat-number text-pink-600" id="totalFemales">0</div>
+                <p class="text-gray-600 text-xs md:text-base font-semibold mt-1 md:mt-2">إناث</p>
+            </div>
+            
+            <!-- Average Age -->
+            <div class="stat-card text-center">
+                <div class="text-3xl md:text-5xl mb-2 md:mb-3 stat-icon">📅</div>
+                <div class="stat-number text-green-600" id="avgAge">0</div>
+                <p class="text-gray-600 text-xs md:text-base font-semibold mt-1 md:mt-2">متوسط العمر</p>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6 mb-4 md:mb-8">
+            
+            <!-- Gender Distribution -->
+            <div class="stat-card">
+                <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">📊 التوزيع حسب الجنس</h3>
+                <div class="flex items-center justify-center gap-4 md:gap-8">
+                    <!-- Male Circle -->
+                    <div class="text-center">
+                        <svg class="w-28 h-28 md:w-36 md:h-36" viewBox="0 0 150 150">
+                            <circle cx="75" cy="75" r="65" fill="none" stroke="#e5e7eb" stroke-width="12"/>
+                            <circle id="maleCircle" cx="75" cy="75" r="65" fill="none" stroke="#3b82f6" stroke-width="12" 
+                                    stroke-dasharray="408.4" stroke-dashoffset="408.4" class="progress-ring"/>
+                        </svg>
+                        <div class="mt-2 md:mt-3">
+                            <div class="text-xl md:text-2xl font-bold text-blue-600" id="malePercent">0%</div>
+                            <div class="text-xs md:text-sm text-gray-600">ذكور</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Female Circle -->
+                    <div class="text-center">
+                        <svg class="w-28 h-28 md:w-36 md:h-36" viewBox="0 0 150 150">
+                            <circle cx="75" cy="75" r="65" fill="none" stroke="#e5e7eb" stroke-width="12"/>
+                            <circle id="femaleCircle" cx="75" cy="75" r="65" fill="none" stroke="#ec4899" stroke-width="12" 
+                                    stroke-dasharray="408.4" stroke-dashoffset="408.4" class="progress-ring"/>
+                        </svg>
+                        <div class="mt-2 md:mt-3">
+                            <div class="text-xl md:text-2xl font-bold text-pink-600" id="femalePercent">0%</div>
+                            <div class="text-xs md:text-sm text-gray-600">إناث</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Age Distribution -->
+            <div class="stat-card">
+                <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">👶👴 التوزيع حسب الفئة العمرية</h3>
+                <div class="space-y-3 md:space-y-4" id="ageDistribution">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Deaths by Decade -->
+        <div class="stat-card mb-4 md:mb-8">
+            <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">📆 الوفيات حسب العقد</h3>
+            <div class="space-y-2 md:space-y-3" id="deathsByDecade">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+
+        <!-- Deaths by Year -->
+        <div class="stat-card mb-4 md:mb-8">
+            <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">📅 الوفيات حسب السنة</h3>
+            <div class="space-y-2 md:space-y-3" id="deathsByYear">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+
+        <!-- Deaths by Family Name -->
+        <div class="stat-card mb-4">
+            <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">👨‍👩‍👧‍👦 الوفيات حسب اسم العائلة</h3>
+            <div class="space-y-2 md:space-y-3" id="deathsByFamily">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <script src="stats.js"></script>
+</body>
+</html>

@@ -130,6 +130,7 @@ function switchTab(tabName) {
     if (tabName === 'records') loadRecords();
     if (tabName === 'images') loadImagesStats();
     if (tabName === 'comments') loadComments();
+    if (tabName === 'users') loadUsers();
 }
 
 // Search records function
@@ -1107,3 +1108,301 @@ function closeModal() {
 if (checkAuth()) {
     loadRecords();
 }
+
+// ==================== USERS MANAGEMENT ====================
+
+async function loadUsers() {
+    const { data, error } = await supabaseAdmin
+        .from('users')
+        .select('*')
+        .order('user_id', { ascending: true });
+    
+    if (error) {
+        console.error('Error loading users:', error);
+        document.getElementById('usersList').innerHTML = `
+            <div class="text-center py-8 text-red-600">
+                خطأ في تحميل المستخدمين
+            </div>
+        `;
+        return;
+    }
+    
+    const container = document.getElementById('usersList');
+    
+    if (!data || data.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-12">
+                <div class="text-6xl mb-4">👤</div>
+                <p class="text-gray-600 text-lg">لا يوجد مستخدمون</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = data.map(user => `
+        <div class="admin-card">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="text-2xl">${user.is_admin ? '👑' : '👤'}</div>
+                        <div>
+                            <div class="record-name">${user.username}</div>
+                            <div class="flex gap-2 mt-1">
+                                ${user.is_admin ? 
+                                    '<span class="badge" style="background: #fef3c7; color: #92400e;">مدير</span>' : 
+                                    '<span class="badge" style="background: #dbeafe; color: #1e40af;">مستخدم عادي</span>'
+                                }
+                                <span class="badge">ID: ${user.user_id}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <button onclick="openEditUserModal(${user.user_id})" 
+                            class="btn-action bg-blue-500 hover:bg-blue-600 text-white">
+                        ✏️ تعديل
+                    </button>
+                    ${user.user_id !== currentUser.user_id ? `
+                        <button onclick="deleteUser(${user.user_id}, '${user.username}')" 
+                                class="btn-action bg-red-500 hover:bg-red-600 text-white">
+                            🗑️ حذف
+                        </button>
+                    ` : '<span class="text-xs text-gray-500">الحساب الحالي</span>'}
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function openAddUserModal() {
+    const modalHTML = `
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-t-2xl">
+                <h2 class="text-2xl font-bold">➕ إضافة مستخدم جديد</h2>
+            </div>
+            
+            <div class="p-6">
+                <form id="userForm" onsubmit="saveNewUser(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">اسم المستخدم *</label>
+                        <input type="text" id="username" required 
+                               class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                               placeholder="أدخل اسم المستخدم">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">كلمة المرور *</label>
+                        <input type="password" id="password" required minlength="4"
+                               class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                               placeholder="أدخل كلمة المرور (4 أحرف على الأقل)">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">تأكيد كلمة المرور *</label>
+                        <input type="password" id="confirmPassword" required minlength="4"
+                               class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                               placeholder="أعد إدخال كلمة المرور">
+                    </div>
+                    
+                    <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                        <input type="checkbox" id="isAdmin" class="w-5 h-5">
+                        <label for="isAdmin" class="font-semibold text-gray-700">👑 منح صلاحيات المدير</label>
+                    </div>
+                    
+                    <div class="flex gap-3 mt-6">
+                        <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition">
+                            حفظ
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition">
+                            إلغاء
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('modal').innerHTML = modalHTML;
+    document.getElementById('modal').classList.remove('hidden');
+}
+
+async function saveNewUser(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const isAdmin = document.getElementById('isAdmin').checked ? 1 : 0;
+    
+    if (password !== confirmPassword) {
+        alert('⚠️ كلمتا المرور غير متطابقتين!');
+        return;
+    }
+    
+    if (password.length < 4) {
+        alert('⚠️ كلمة المرور يجب أن تكون 4 أحرف على الأقل!');
+        return;
+    }
+    
+    // Check if username already exists
+    const { data: existing } = await supabaseAdmin
+        .from('users')
+        .select('user_id')
+        .eq('username', username);
+    
+    if (existing && existing.length > 0) {
+        alert('⚠️ اسم المستخدم موجود مسبقاً! الرجاء اختيار اسم آخر.');
+        return;
+    }
+    
+    // Hash password (simple bcrypt-like approach - in production use proper backend hashing)
+    const hashedPassword = await hashPassword(password);
+    
+    const { error } = await supabaseAdmin
+        .from('users')
+        .insert([{
+            username: username,
+            password: hashedPassword,
+            is_admin: isAdmin
+        }]);
+    
+    if (error) {
+        alert('حدث خطأ في الإضافة: ' + error.message);
+        console.error(error);
+        return;
+    }
+    
+    alert('✅ تم إضافة المستخدم بنجاح!');
+    closeModal();
+    loadUsers();
+}
+
+function openEditUserModal(userId) {
+    supabaseAdmin
+        .from('users')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+        .then(({ data: user, error }) => {
+            if (error || !user) {
+                alert('خطأ في تحميل بيانات المستخدم');
+                return;
+            }
+            
+            const modalHTML = `
+                <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                    <div class="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-t-2xl">
+                        <h2 class="text-2xl font-bold">✏️ تعديل مستخدم</h2>
+                    </div>
+                    
+                    <div class="p-6">
+                        <form id="editUserForm" onsubmit="updateUser(event, ${userId})" class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">اسم المستخدم</label>
+                                <input type="text" id="editUsername" value="${user.username}" required 
+                                       class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">كلمة مرور جديدة (اتركها فارغة إذا لم ترد التغيير)</label>
+                                <input type="password" id="editPassword" minlength="4"
+                                       class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                       placeholder="كلمة مرور جديدة">
+                            </div>
+                            
+                            <div class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                                <input type="checkbox" id="editIsAdmin" ${user.is_admin ? 'checked' : ''} class="w-5 h-5">
+                                <label for="editIsAdmin" class="font-semibold text-gray-700">👑 صلاحيات المدير</label>
+                            </div>
+                            
+                            <div class="flex gap-3 mt-6">
+                                <button type="submit" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition">
+                                    حفظ التعديلات
+                                </button>
+                                <button type="button" onclick="closeModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 rounded-lg transition">
+                                    إلغاء
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modal').innerHTML = modalHTML;
+            document.getElementById('modal').classList.remove('hidden');
+        });
+}
+
+async function updateUser(event, userId) {
+    event.preventDefault();
+    
+    const username = document.getElementById('editUsername').value.trim();
+    const newPassword = document.getElementById('editPassword').value;
+    const isAdmin = document.getElementById('editIsAdmin').checked ? 1 : 0;
+    
+    const updateData = {
+        username: username,
+        is_admin: isAdmin
+    };
+    
+    // Only update password if a new one was provided
+    if (newPassword && newPassword.length >= 4) {
+        const hashedPassword = await hashPassword(newPassword);
+        updateData.password = hashedPassword;
+    }
+    
+    const { error } = await supabaseAdmin
+        .from('users')
+        .update(updateData)
+        .eq('user_id', userId);
+    
+    if (error) {
+        alert('حدث خطأ في التعديل: ' + error.message);
+        console.error(error);
+        return;
+    }
+    
+    alert('✅ تم تعديل المستخدم بنجاح!');
+    
+    // If current user modified themselves, update session
+    if (userId === currentUser.user_id) {
+        currentUser.username = username;
+        currentUser.is_admin = isAdmin;
+        sessionStorage.setItem('adminUser', JSON.stringify(currentUser));
+        document.getElementById('adminName').textContent = `مرحباً ${username}`;
+    }
+    
+    closeModal();
+    loadUsers();
+}
+
+async function deleteUser(userId, username) {
+    if (!confirm(`⚠️ هل أنت متأكد من حذف المستخدم "${username}"؟\n\nلا يمكن التراجع عن هذا الإجراء!`)) {
+        return;
+    }
+    
+    const { error } = await supabaseAdmin
+        .from('users')
+        .delete()
+        .eq('user_id', userId);
+    
+    if (error) {
+        alert('حدث خطأ في الحذف: ' + error.message);
+        console.error(error);
+        return;
+    }
+    
+    alert('✅ تم حذف المستخدم بنجاح!');
+    loadUsers();
+}
+
+// Simple password hashing (for demo - use proper backend hashing in production)
+async function hashPassword(password) {
+    // In production, this should be done server-side with bcrypt
+    // For now, we'll use a simple base64 encoding as placeholder
+    // NOTE: This is NOT secure for production!
+    return btoa(password + 'salt_yanuh_2026');
+}
+
+// ==================== END USERS MANAGEMENT ====================

@@ -1112,6 +1112,8 @@ if (checkAuth()) {
 // ==================== USERS MANAGEMENT ====================
 
 async function loadUsers() {
+    console.log('🔄 Loading users...');
+    
     const { data, error } = await supabaseAdmin
         .from('users')
         .select('*')
@@ -1120,13 +1122,20 @@ async function loadUsers() {
     if (error) {
         console.error('Error loading users:', error);
         document.getElementById('usersList').innerHTML = `
-            <div class="text-center py-8 text-red-600">
-                خطأ في تحميل المستخدمين
+            <div class="text-center py-8">
+                <div class="text-6xl mb-4">⚠️</div>
+                <p class="text-red-600 text-lg font-semibold">خطأ في تحميل المستخدمين</p>
+                <p class="text-sm text-gray-600 mt-2">تفاصيل الخطأ: ${error.message}</p>
+                <details class="mt-4 text-right">
+                    <summary class="cursor-pointer text-blue-600">عرض التفاصيل التقنية</summary>
+                    <pre class="mt-2 p-4 bg-gray-100 rounded text-xs text-left overflow-auto">${JSON.stringify(error, null, 2)}</pre>
+                </details>
             </div>
         `;
         return;
     }
     
+    console.log('✅ Users loaded:', data);
     const container = document.getElementById('usersList');
     
     if (!data || data.length === 0) {

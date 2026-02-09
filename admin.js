@@ -574,25 +574,41 @@ async function manageComments(deathId) {
         .single();
     
     if (personError || !person) {
+        console.error('Error loading person:', personError);
         alert('خطأ في تحميل بيانات المتوفى');
         return;
     }
     
+    console.log('✅ Person loaded:', person);
     currentCommentPersonData = person;
     
-    // Load person's comments
+    // Load person's comments - try both possible column names
+    console.log('📥 Loading comments for death_id:', deathId);
+    
+    // First, let's get all comments to see the structure
+    const { data: allComments, error: allError } = await supabaseClient
+        .from('comments')
+        .select('*');
+    
+    console.log('📊 All comments in database:', allComments);
+    console.log('🔍 Looking for comments with death_id or id_death =', deathId);
+    
+    // Now load person's comments
     const { data: comments, error: commentsError } = await supabaseClient
         .from('comments')
         .select('*')
-        .eq('id_death', deathId)
+        .eq('death_id', deathId)
         .order('created_at', { ascending: false });
     
     if (commentsError) {
-        console.error('Error loading comments:', commentsError);
+        console.error('❌ Error loading comments:', commentsError);
         currentPersonComments = [];
     } else {
+        console.log('✅ Comments loaded for person:', comments);
         currentPersonComments = comments || [];
     }
+    
+    console.log(`📝 Total comments found: ${currentPersonComments.length}`);
     
     showCommentsManagementModal(person);
 }
@@ -721,17 +737,18 @@ async function approvePersonComment(commentId) {
 async function deletePersonComment(commentId) {
     if (!confirm('⚠️ هل أنت متأكد من حذف هذا التعليق نهائياً؟\n\nلا يمكن التراجع عن هذا الإجراء!')) return;
     
-    const { error } = await supabaseClient
+    const { error } = await supabaseAdmin
         .from('comments')
         .delete()
         .eq('comment_id', commentId);
     
     if (error) {
         alert('حدث خطأ في الحذف');
-        console.error(error);
+        console.error('Error deleting comment:', error);
         return;
     }
     
+    alert('✅ تم حذف التعليق بنجاح');
     // Refresh modal
     manageComments(currentCommentPersonData.death_id);
 }

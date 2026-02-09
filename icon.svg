@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#667eea" rx="80"/>
+  
+  <!-- Candle -->
+  <g transform="translate(256, 256)">
+    <!-- Flame -->
+    <ellipse cx="0" cy="-140" rx="35" ry="50" fill="#FFD700" opacity="0.9"/>
+    <ellipse cx="0" cy="-140" rx="25" ry="40" fill="#FFA500" opacity="0.9"/>
+    <ellipse cx="0" cy="-135" rx="15" ry="30" fill="#FFFF00" opacity="0.95"/>
+    
+    <!-- Candle body -->
+    <rect x="-30" y="-80" width="60" height="160" fill="#F5F5DC" rx="5"/>
+    <rect x="-30" y="-80" width="60" height="20" fill="#E8E8D0"/>
+    
+    <!-- Wick -->
+    <rect x="-2" y="-90" width="4" height="15" fill="#333"/>
+  </g>
+  
+  <!-- Arabic text -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white" text-anchor="middle">يانوح</text>
+</svg>

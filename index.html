@@ -7,11 +7,12 @@
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="يانوح">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
     <link rel="apple-touch-icon" href="icon.png">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -270,8 +271,10 @@
 
     <script src="script.js"></script>
     
-    <!-- PWA Service Worker Registration -->
+    <!-- PWA Service Worker Registration - TEMPORARILY DISABLED -->
     <script>
+        // Service Worker temporarily disabled to fix CORS issues
+        /*
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 // Use relative path - works for both root and subdirectory
@@ -280,6 +283,7 @@
                     .catch(err => console.log('❌ Service Worker registration failed:', err));
             });
         }
+        */
     </script>
 </body>
 </html>

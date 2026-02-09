@@ -2,7 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="format-detection" content="telephone=no">
     <title>تسجيل الدخول - כניסה</title>    
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#667eea">
@@ -15,6 +16,7 @@
         <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="mobile-optimizations.css">
     <style>
         body { 
             font-family: 'Tajawal', 'Cairo', sans-serif;
@@ -23,6 +25,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        
+        /* Mobile-First Touch Targets */
+        button,
+        input,
+        a {
+            min-height: 48px;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+            touch-action: manipulation;
+        }
+        
+        input {
+            font-size: 16px !important; /* Prevents iOS zoom */
+            -webkit-appearance: none;
+            appearance: none;
         }
     </style>
 </head>
@@ -59,7 +76,8 @@
 
                 <button 
                     type="submit" 
-                    class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:shadow-lg transition-all duration-200 active:scale-95">
+                    class="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:shadow-lg transition-all duration-200 active:scale-96 touch-manipulation"
+                    style="min-height: 56px; -webkit-tap-highlight-color: transparent;">
                     دخول
                 </button>
             </form>

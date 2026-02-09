@@ -1,0 +1,391 @@
+/* ========================================
+   Mobile-First Optimizations for Memorial App
+   98% Mobile Usage - Optimized for Touch
+   ======================================== */
+
+/* ============ Performance ============ */
+
+/* Reduce animations for better battery life */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* GPU acceleration for smooth scrolling */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.memorial-card,
+.admin-card,
+.stat-card,
+.comment-card {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
+}
+
+/* ============ Touch Targets ============ */
+
+/* Apple & Google recommend minimum 44x44px for touch */
+button,
+input,
+textarea,
+select,
+a,
+.touch-target {
+    min-height: 48px; /* 48px for extra comfort on mobile */
+    min-width: 48px;
+    -webkit-tap-highlight-color: rgba(102, 126, 234, 0.15);
+    touch-action: manipulation;
+}
+
+/* Desktop: smaller touch targets are okay */
+@media (min-width: 768px) {
+    button,
+    input,
+    textarea,
+    select {
+        min-height: 44px;
+    }
+}
+
+/* Remove tap highlight color for links and cards */
+a,
+.memorial-card,
+.clickable {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ============ Input Optimization ============ */
+
+/* Prevent iOS zoom on input focus (16px minimum) */
+input,
+textarea,
+select {
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Better input focus on mobile */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* ============ Responsive Typography ============ */
+
+/* Fluid typography for mobile */
+@media (max-width: 640px) {
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1.25rem; }
+    h3 { font-size: 1.125rem; }
+    
+    .stat-number { font-size: 2rem; }
+    .record-name { font-size: 1rem; }
+}
+
+/* ============ Spacing Optimization ============ */
+
+/* Tighter spacing on mobile to show more content */
+@media (max-width: 768px) {
+    .max-w-7xl,
+    .max-w-6xl,
+    .max-w-4xl {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    .memorial-card,
+    .admin-card {
+        margin-bottom: 0.75rem;
+        padding: 1rem;
+    }
+    
+    header {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+}
+
+/* ============ Modal Optimization ============ */
+
+/* Mobile-first: Full-screen bottom sheet modals */
+.search-modal,
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+}
+
+.search-modal-content,
+.modal-content {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    animation: slideUpModal 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUpModal {
+    from {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Desktop: Center modals with max-width */
+@media (min-width: 768px) {
+    .search-modal,
+    .modal {
+        align-items: flex-start;
+        padding-top: 2rem;
+    }
+    
+    .search-modal-content,
+    .modal-content {
+        max-width: 600px;
+        border-radius: 16px;
+        margin: 0 1rem;
+    }
+}
+
+/* ============ Image Optimization ============ */
+
+/* Smooth image transitions - disabled to prevent images from being hidden */
+/* img {
+    transition: opacity 0.3s ease;
+}
+
+img[loading="lazy"] {
+    opacity: 0;
+}
+
+img[loading="lazy"].loaded,
+img[loading="eager"] {
+    opacity: 1;
+} */
+
+/* ============ Button States ============ */
+
+/* Better visual feedback for touch */
+button:active,
+.btn-action:active,
+.professional-btn:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease;
+}
+
+/* Prevent double-tap zoom on buttons */
+button,
+.btn-action {
+    touch-action: manipulation;
+}
+
+/* ============ Scrolling Optimization ============ */
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Better momentum scrolling on iOS */
+body,
+.overflow-y-auto,
+.scroll-container {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============ Pull-to-Refresh Override ============ */
+
+/* Prevent accidental pull-to-refresh on important elements */
+header,
+.sticky,
+.fixed {
+    overscroll-behavior-y: contain;
+}
+
+/* ============ Safe Area for Notched Devices ============ */
+
+/* iPhone X, 11, 12, 13, 14, 15 notch support */
+@supports (padding-top: env(safe-area-inset-top)) {
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+    
+    header.sticky,
+    header.fixed {
+        top: env(safe-area-inset-top);
+    }
+}
+
+/* ============ Loading States ============ */
+
+/* Skeleton screens for better perceived performance */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        #f0f0f0 0%,
+        #e0e0e0 50%,
+        #f0f0f0 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ============ Orientation Changes ============ */
+
+/* Better handling of landscape mode on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .search-modal-content,
+    .modal-content {
+        max-height: 85vh;
+    }
+    
+    header {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+}
+
+/* ============ Connection-Aware Loading ============ */
+
+/* Reduce animations on slow connections */
+@media (prefers-reduced-data: reduce) {
+    * {
+        animation-duration: 0s !important;
+        transition-duration: 0s !important;
+    }
+}
+
+/* ============ Dark Mode Support (Future) ============ */
+
+/* Prepare for dark mode without implementing it yet */
+@media (prefers-color-scheme: dark) {
+    /* Will be implemented later if needed */
+}
+
+/* ============ Accessibility ============ */
+
+/* Better focus indicators for keyboard navigation */
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+    outline: 3px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* Ensure text is readable */
+body {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    button,
+    .btn-action {
+        border: 2px solid currentColor;
+    }
+}
+
+/* ============ Grid Optimization ============ */
+
+/* Single column on mobile, multi-column on larger screens */
+@media (max-width: 640px) {
+    .grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ============ Card Hover States ============ */
+
+/* Disable hover effects on touch devices */
+@media (hover: none) {
+    .memorial-card:hover,
+    .admin-card:hover,
+    .stat-card:hover {
+        transform: none;
+        box-shadow: initial;
+    }
+}
+
+/* ============ Virtual Keyboard Handling ============ */
+
+/* Prevent layout shift when keyboard appears */
+.fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+}
+
+/* ============ Network Status Indicator ============ */
+
+.offline-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #ef4444;
+    color: white;
+    text-align: center;
+    padding: 0.5rem;
+    z-index: 9999;
+    display: none;
+}
+
+.offline .offline-indicator {
+    display: block;
+}
+
+/* ============ Print Optimization ============ */
+
+@media print {
+    header,
+    button,
+    .no-print {
+        display: none !important;
+    }
+    
+    .memorial-card,
+    .admin-card {
+        break-inside: avoid;
+    }
+}

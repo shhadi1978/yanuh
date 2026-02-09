@@ -1,8 +1,17 @@
 // הגדרות חיבור - Supabase Settings
 const SUPABASE_URL = 'https://acjxhufnotvweoeoccvt.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Rcssx9MNIREdHWq27nOkWQ_ZvK5JPQV';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjanhodWZub3R2d2VvZW9jY3Z0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxODE2MjQsImV4cCI6MjA4NTc1NzYyNH0.TF79yXwg9T8sThhfw4P9vvb9iWY9qkzUVh6t-_v38iA';
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+        persistSession: false
+    },
+    global: {
+        headers: {
+            'Access-Control-Allow-Origin': '*'
+        }
+    }
+});
 
 let allDeceased = []; // כאן נשמור את כל הנתונים מה-DB
 let displayedCount = 0;
@@ -11,15 +20,21 @@ let isLoading = false;
 let hasMoreData = true;
 let searchDebounceTimer = null;
 
+// Pull-to-Refresh variables
+let pullStartY = 0;
+let isPulling = false;
+let pullDistance = 0;
+const pullThreshold = 80;
+
 // فونقضية لشليفت النتونيم منهطبلة death
-async function loadData() {
+async function loadData(forceRefresh = false) {
     // בדיקת cache תחילה
     const cachedData = localStorage.getItem('memorial_cache');
     const cacheTime = localStorage.getItem('memorial_cache_time');
     const now = Date.now();
     
-    // אם יש cache ולא עבר יותר מ-5 דקות
-    if (cachedData && cacheTime && (now - parseInt(cacheTime)) < 300000) {
+    // אם יש cache ולא עבר יותר מ-5 דקות (אלא אם זה forceRefresh)
+    if (!forceRefresh && cachedData && cacheTime && (now - parseInt(cacheTime)) < 300000) {
         allDeceased = JSON.parse(cachedData);
         renderInitialCards();
         updateCounter(allDeceased.length);
@@ -237,6 +252,7 @@ function renderCards(data, append = false) {
                          class="w-full h-full object-contain"
                          loading="lazy"
                          decoding="async"
+                         fetchpriority="low"
                          onerror="this.parentElement.style.cssText='background: #f9fafb;'; this.src='${defaultAvatar}';">
                     ${ageDisplay ? `
                     <div class="absolute bottom-3 right-3 backdrop-blur-md bg-white/95 px-4 py-2 rounded-xl shadow-lg border border-gray-200/50">
@@ -253,7 +269,9 @@ function renderCards(data, append = false) {
                 <div class="w-full aspect-square bg-gray-50 relative overflow-hidden">
                     <img src="${defaultAvatar}" 
                          alt="${fullName}" 
-                         class="w-full h-full object-contain p-4">
+                         class="w-full h-full object-contain p-4"
+                         loading="lazy"
+                         decoding="async">
                     ${ageDisplay ? `
                     <div class="absolute bottom-3 right-3 backdrop-blur-md bg-white/95 px-4 py-2 rounded-xl shadow-lg border border-gray-200/50">
                         <div class="flex items-center gap-2">
@@ -267,7 +285,7 @@ function renderCards(data, append = false) {
         }
         
         const card = `
-            <div class="memorial-card rounded-lg shadow-sm overflow-hidden cursor-pointer" onclick="window.location.href='person.html?id=${person.death_id}'">
+            <div class="memorial-card rounded-lg shadow-sm overflow-hidden cursor-pointer touch-manipulation" onclick="window.location.href='person.html?id=${person.death_id}'" style="-webkit-tap-highlight-color: transparent;">
                 <!-- Name Section - First -->
                 <div class="p-4 pb-3 bg-gradient-to-b from-gray-50 to-white border-b border-gray-100">
                     <h2 class="text-lg font-bold ${nameColor} leading-snug text-right drop-shadow-sm">
@@ -334,9 +352,13 @@ function setupInfiniteScroll() {
     console.log('✅ Infinite scroll ready');
 }
 
-// פונקציית עדכון מונה
+// פונקציית עדכון מונה (עבור desktop ו-mobile)
 function updateCounter(count) {
-    document.getElementById('totalCounter').innerText = count;
+    const desktopCounter = document.getElementById('totalCounter');
+    const mobileCounter = document.getElementById('totalCounterMobile');
+    
+    if (desktopCounter) desktopCounter.innerText = count;
+    if (mobileCounter) mobileCounter.innerText = count;
 }
 
 // לוגיקת החיפוש בזמן אמת
@@ -388,16 +410,18 @@ window.addEventListener('scroll', () => {
     clearTimeout(scrollTimeout);
     scrollTimeout = setTimeout(() => {
         const header = document.querySelector('header');
-        if (!header) return;
+        const bottomNav = document.querySelector('.bottom-nav');
         
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
         if (scrollTop > lastScrollTop && scrollTop > 100) {
-            // Scrolling down
-            header.classList.add('header-hidden');
+            // Scrolling down - hide header and bottom nav
+            if (header) header.classList.add('header-hidden');
+            if (bottomNav) bottomNav.classList.add('nav-hidden');
         } else {
-            // Scrolling up
-            header.classList.remove('header-hidden');
+            // Scrolling up - show header and bottom nav
+            if (header) header.classList.remove('header-hidden');
+            if (bottomNav) bottomNav.classList.remove('nav-hidden');
         }
         
         lastScrollTop = scrollTop;
@@ -464,6 +488,8 @@ function updateLanguage() {
 
 // הפעלה ברגע שהדף נטען
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOMContentLoaded fired - script.js loaded successfully');
+    
     // שחזור שפה שמורה
     const savedLang = localStorage.getItem('language');
     if (savedLang) currentLang = savedLang;
@@ -486,7 +512,268 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Bottom Navigation - Mobile Search Button
+    const navSearchBtn = document.getElementById('navSearch');
+    if (navSearchBtn) {
+        navSearchBtn.addEventListener('click', openSearchModal);
+    }
+    
     updateLanguage();
-    loadData();
+    
+    // Check if we need to force refresh (cache was cleared from admin)
+    const needsRefresh = localStorage.getItem('needs_refresh') === 'true';
+    if (needsRefresh) {
+        localStorage.removeItem('needs_refresh');
+        console.log('🔄 Admin made changes, forcing refresh...');
+        loadData(true);
+    } else {
+        loadData(false);
+    }
+    
     setupSearch();
+    
+    console.log('📱 About to setup pull-to-refresh...');
+    try {
+        setupPullToRefresh();
+    } catch (error) {
+        console.error('❌ Error setting up pull-to-refresh:', error);
+    }
 });
+
+// Auto-refresh when returning to page
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        console.log('👁️ Page became visible');
+        
+        // Reinitialize pull-to-refresh
+        setupPullToRefresh();
+        
+        // Page became visible - check if needs refresh
+        const needsRefresh = localStorage.getItem('needs_refresh') === 'true';
+        if (needsRefresh) {
+            localStorage.removeItem('needs_refresh');
+            console.log('🔄 Returning to page, refreshing data...');
+            loadData(true);
+        }
+    }
+});
+
+// Handle page restore from bfcache (back-forward cache)
+window.addEventListener('pageshow', (event) => {
+    console.log('📄 pageshow event fired, persisted:', event.persisted);
+    if (event.persisted) {
+        // Page was restored from bfcache - reinitialize
+        console.log('🔄 Page restored from cache, reinitializing pull-to-refresh...');
+        setupPullToRefresh();
+        
+        // Check if data needs refresh
+        const needsRefresh = localStorage.getItem('needs_refresh') === 'true';
+        if (needsRefresh) {
+            localStorage.removeItem('needs_refresh');
+            console.log('🔄 Auto-refreshing after admin changes...');
+            loadData(true);
+        }
+    }
+});
+
+// Additional handler for window focus
+window.addEventListener('focus', () => {
+    console.log('🎯 Window gained focus, reinitializing pull-to-refresh...');
+    setupPullToRefresh();
+});
+
+// Pull-to-Refresh functionality
+let pullToRefreshInitialized = false;
+let pullIndicator = null;
+let pullToRefreshController = null; // AbortController to manage listeners
+
+function setupPullToRefresh() {
+    console.log('🔧 [START] Setting up pull-to-refresh... controller exists:', !!pullToRefreshController);
+    console.log('📊 State: pullStartY=' + pullStartY + ', isPulling=' + isPulling + ', pullDistance=' + pullDistance);
+    
+    // Abort old listeners if they exist
+    if (pullToRefreshController) {
+        try {
+            pullToRefreshController.abort();
+            console.log('🧹 Aborted old pull-to-refresh listeners');
+        } catch (e) {
+            console.warn('⚠️ Error aborting controller:', e);
+        }
+    }
+    
+    // Reset all pull-to-refresh state variables
+    pullStartY = 0;
+    isPulling = false;
+    pullDistance = 0;
+    
+    // Remove any existing pull indicator
+    const existingIndicator = document.getElementById('pull-indicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+        console.log('🗑️ Removed existing pull indicator');
+    }
+    pullIndicator = null;
+    
+    // Create new controller
+    pullToRefreshController = new AbortController();
+    const signal = pullToRefreshController.signal;
+    
+    // Define handlers
+    const touchStartHandler = (e) => {
+        console.log('👆 touchstart fired! scrollY=' + window.scrollY);
+        if (window.scrollY === 0) {
+            pullStartY = e.touches[0].pageY;
+            isPulling = true;
+            console.log('✅ Pull started at Y=' + pullStartY);
+        } else {
+            console.log('⚠️ Not at top, scrollY=' + window.scrollY);
+        }
+    };
+    
+    const touchMoveHandler = (e) => {
+        if (!isPulling || window.scrollY > 0) return;
+        
+        const currentY = e.touches[0].pageY;
+        pullDistance = Math.min(currentY - pullStartY, 120);
+        
+        if (pullDistance > 0) {
+            // Create pull indicator if it doesn't exist
+            if (!pullIndicator) {
+                pullIndicator = document.createElement('div');
+                pullIndicator.id = 'pull-indicator';
+                pullIndicator.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: ${pullDistance}px;
+                    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: bold;
+                    z-index: 9999;
+                    transition: height 0.1s ease;
+                `;
+                
+                if (pullDistance >= pullThreshold) {
+                    pullIndicator.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>اترك لتحديث...</span>
+                        </div>
+                    `;
+                } else {
+                    pullIndicator.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span>⬇️</span>
+                            <span>اسحب للتحديث...</span>
+                        </div>
+                    `;
+                }
+                
+                document.body.prepend(pullIndicator);
+            } else {
+                pullIndicator.style.height = pullDistance + 'px';
+                
+                if (pullDistance >= pullThreshold) {
+                    pullIndicator.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>اترك لتحديث...</span>
+                        </div>
+                    `;
+                } else {
+                    pullIndicator.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span>⬇️</span>
+                            <span>اسحب للتحديث...</span>
+                        </div>
+                    `;
+                }
+            }
+        }
+    };
+    
+    const touchEndHandler = async () => {
+        if (!isPulling) return;
+        
+        if (pullDistance >= pullThreshold) {
+            // Trigger refresh
+            if (pullIndicator) {
+                pullIndicator.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>جاري التحديث...</span>
+                    </div>
+                `;
+            }
+            
+            // Force refresh
+            await loadData(true);
+            
+            // Show success message
+            if (pullIndicator) {
+                pullIndicator.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span>✅</span>
+                        <span>تم التحديث!</span>
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    if (pullIndicator && pullIndicator.parentNode) {
+                        pullIndicator.style.transition = 'all 0.3s ease';
+                        pullIndicator.style.height = '0px';
+                        pullIndicator.style.opacity = '0';
+                        setTimeout(() => {
+                            if (pullIndicator && pullIndicator.parentNode) {
+                                pullIndicator.remove();
+                            }
+                            pullIndicator = null;
+                        }, 300);
+                    }
+                }, 500);
+            }
+        } else {
+            // Remove indicator
+            if (pullIndicator) {
+                pullIndicator.style.transition = 'all 0.2s ease';
+                pullIndicator.style.height = '0px';
+                pullIndicator.style.opacity = '0';
+                setTimeout(() => {
+                    if (pullIndicator && pullIndicator.parentNode) {
+                        pullIndicator.remove();
+                    }
+                    pullIndicator = null;
+                }, 200);
+            }
+        }
+        
+        isPulling = false;
+        pullDistance = 0;
+        pullStartY = 0;
+    };
+    
+    // Add listeners with AbortController signal
+    console.log('🎧 Adding touch event listeners...');
+    document.addEventListener('touchstart', touchStartHandler, { passive: true, signal });
+    console.log('  ✓ touchstart added');
+    document.addEventListener('touchmove', touchMoveHandler, { passive: true, signal });
+    console.log('  ✓ touchmove added');
+    document.addEventListener('touchend', touchEndHandler, { passive: true, signal });
+    console.log('  ✓ touchend added');
+    
+    pullToRefreshInitialized = true;
+    console.log('✅ [DONE] Pull-to-refresh initialized with AbortController');
+}

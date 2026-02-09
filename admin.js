@@ -622,7 +622,11 @@ function showCommentsManagementModal(person) {
     const approvedComments = currentPersonComments.filter(c => c.display_comment);
     
     const commentsHTML = currentPersonComments.length > 0 ? currentPersonComments.map(comment => {
-        const date = new Date(comment.created_at).toLocaleDateString('ar');
+        const date = new Date(comment.created_at);
+        const dateStr = date.toLocaleDateString('ar');
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const timeStr = `${hours}:${minutes}`;
         const isApproved = comment.display_comment;
         
         // Build buttons based on comment status
@@ -651,14 +655,17 @@ function showCommentsManagementModal(person) {
         return `
             <div class="bg-white rounded-xl border-2 ${isApproved ? 'border-green-200' : 'border-yellow-200'} p-4 shadow-sm">
                 <div class="flex items-center justify-between mb-3">
+                    <div class="flex flex-col text-xs text-gray-500 font-medium">
+                        <span>${dateStr}</span>
+                        <span class="text-xs text-gray-400">${timeStr}</span>
+                    </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-500 font-medium">${date}</span>
                         ${isApproved ? 
                             '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">✓ معتمد</span>' : 
                             '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-bold">⏳ معلق</span>'
                         }
+                        <div class="font-bold text-gray-900">${comment.author}</div>
                     </div>
-                    <div class="font-bold text-gray-900">${comment.author}</div>
                 </div>
                 <p class="text-gray-700 bg-gray-50 p-3 rounded-lg text-right leading-relaxed mb-3 text-sm">${comment.comment_text}</p>
                 ${buttonsHtml}
@@ -800,13 +807,20 @@ async function loadComments() {
     
     const html = data.map(comment => {
         const personName = `${comment.death.first_name || ''} ${comment.death.middle_name || ''} ${comment.death.last_name || ''}`.trim();
-        const date = new Date(comment.created_at).toLocaleDateString('ar');
+        const date = new Date(comment.created_at);
+        const dateStr = date.toLocaleDateString('ar');
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const timeStr = `${hours}:${minutes}`;
         
         return `
             <div class="admin-card">
                 <div class="mb-4">
                     <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm text-gray-500 font-medium">${date}</span>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-500 font-medium">${dateStr}</div>
+                            <div class="text-xs text-gray-400">${timeStr}</div>
+                        </div>
                         <div class="text-right">
                             <div class="font-bold text-gray-900 text-lg">${comment.author}</div>
                             <div class="text-gray-500 text-sm">على صفحة ${personName}</div>
@@ -968,14 +982,14 @@ function showRecordModal(person) {
                     <!-- Birth Date -->
                     <div class="text-right">
                         <label class="block text-sm font-bold text-gray-700 mb-2">تاريخ الولادة</label>
-                        <input type="date" id="birth_date" value="${person?.birth_date || new Date().toISOString().split('T')[0]}"
+                        <input type="date" id="birth_date" value="${person?.birth_date || ''}"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg text-right">
                     </div>
                     
                     <!-- Death Date -->
                     <div class="text-right">
                         <label class="block text-sm font-bold text-gray-700 mb-2">تاريخ الوفاة</label>
-                        <input type="date" id="death_date" value="${person?.death_date || ''}"
+                        <input type="date" id="death_date" value="${person?.death_date || new Date().toISOString().split('T')[0]}"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg text-right">
                     </div>
                     
@@ -1035,6 +1049,20 @@ function showRecordModal(person) {
     modal.innerHTML = modalHTML;
     modal.classList.remove('hidden');
     
+    // Prevent closing when clicking inside the modal content
+    // Remove old listeners first
+    const newModal = modal.cloneNode(false);
+    modal.parentNode.replaceChild(newModal, modal);
+    newModal.innerHTML = modalHTML;
+    newModal.classList.remove('hidden');
+    
+    newModal.addEventListener('click', (e) => {
+        // Only close if clicking directly on the modal background, not on any child elements
+        if (e.target === newModal) {
+            closeModal();
+        }
+    }, false);
+    
     // Handle form submission
     document.getElementById('recordForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1078,6 +1106,11 @@ async function addRecord(data) {
     alert('تمت الإضافة بنجاح!');
     closeModal();
     loadRecords();
+    
+    // Clear cache to force refresh on main page
+    localStorage.removeItem('memorial_cache');
+    localStorage.removeItem('memorial_cache_time');
+    localStorage.setItem('needs_refresh', 'true');
 }
 
 // Update record
@@ -1096,6 +1129,11 @@ async function updateRecord(deathId, data) {
     alert('تم التعديل بنجاح!');
     closeModal();
     loadRecords();
+    
+    // Clear cache to force refresh on main page
+    localStorage.removeItem('memorial_cache');
+    localStorage.removeItem('memorial_cache_time');
+    localStorage.setItem('needs_refresh', 'true');
 }
 
 // Close modal

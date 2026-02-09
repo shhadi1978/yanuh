@@ -1,6 +1,6 @@
 // Supabase Settings
 const SUPABASE_URL = 'https://acjxhufnotvweoeoccvt.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Rcssx9MNIREdHWq27nOkWQ_ZvK5JPQV';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjanhodWZub3R2d2VvZW9jY3Z0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxODE2MjQsImV4cCI6MjA4NTc1NzYyNH0.TF79yXwg9T8sThhfw4P9vvb9iWY9qkzUVh6t-_v38iA';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Check if already logged in

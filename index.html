@@ -2,7 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="format-detection" content="telephone=no">
     <title>سجل الوفيات - يانوح</title>
     
     <!-- PWA Meta Tags -->
@@ -20,6 +21,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="mobile-optimizations.css">
     <style>
         * { box-sizing: border-box; }
         body { 
@@ -27,6 +29,7 @@
             background: #f5f7fa;
             min-height: 100vh;
             color: #2d3748;
+            overscroll-behavior-y: contain;
         }
         
         /* Professional Color Scheme */
@@ -38,9 +41,23 @@
         }
         
         /* Mobile-First: Touch-friendly sizes */
-        .touch-target {
+        .touch-target,
+        button,
+        input,
+        textarea,
+        select,
+        a {
             min-height: 44px;
-            min-width: 44px;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Better input experience on mobile */
+        input,
+        textarea,
+        select {
+            font-size: 16px !important; /* Prevents iOS zoom */
+            -webkit-appearance: none;
+            appearance: none;
         }
         
         /* RTL Support */
@@ -80,40 +97,63 @@
             transform: translateY(-100%);
         }
         
-        /* Search Modal */
+        /* Search Modal - Mobile-First */
         .search-modal {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             z-index: 100;
             display: none;
-            align-items: flex-start;
+            align-items: flex-end;
             justify-content: center;
-            padding-top: 2rem;
+            padding: 0;
+            touch-action: none;
         }
         
         .search-modal.active {
             display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .search-modal-content {
             background: white;
             width: 100%;
-            max-width: 600px;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 0 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            animation: slideDown 0.3s ease-out;
+            max-width: 100%;
+            border-radius: 20px 20px 0 0;
+            padding: 1.25rem;
+            margin: 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
-        @keyframes slideDown {
+        @media (min-width: 768px) {
+            .search-modal {
+                align-items: flex-start;
+                padding-top: 2rem;
+            }
+            .search-modal-content {
+                max-width: 600px;
+                border-radius: 16px;
+                margin: 0 1rem;
+            }
+        }
+        
+        @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(100%);
             }
             to {
                 opacity: 1;
@@ -123,13 +163,13 @@
         
         .search-input {
             transition: all 0.2s ease;
-            font-size: 16px; /* Prevents zoom on iOS */
+            border-radius: 12px;
         }
         
         .search-input:focus {
             outline: none;
-            border-color: var(--secondary-dark);
-            box-shadow: 0 0 0 3px rgba(45, 55, 72, 0.1);
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         
         .stat-badge {
@@ -141,15 +181,112 @@
             background: #ffffff;
             border: 1.5px solid var(--border-color);
             color: var(--secondary-dark);
-            transition: all 0.2s ease;
-            min-height: 44px;
+            transition: all 0.15s ease;
+            min-height: 48px;
+            font-weight: 600;
+            touch-action: manipulation;
         }
         
         .professional-btn:active {
             background: var(--primary-dark);
             color: #ffffff;
             border-color: var(--primary-dark);
-            transform: scale(0.98);
+            transform: scale(0.96);
+        }
+        
+        @media (min-width: 768px) {
+            .professional-btn {
+                min-height: 44px;
+            }
+        }
+        
+        /* Bottom Navigation Bar (Mobile) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-top: 1px solid var(--border-color);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+            display: none;
+            padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+            transition: transform 0.3s ease;
+        }
+        
+        .bottom-nav.nav-hidden {
+            transform: translateY(100%);
+        }
+        
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: flex;
+            }
+            
+            /* Hide desktop header on mobile */
+            header .mobile-hide-flex {
+                display: none !important;
+            }
+            
+            /* Add padding to body for bottom nav */
+            body {
+                padding-bottom: calc(70px + env(safe-area-inset-bottom));
+            }
+        }
+        
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+            text-decoration: none;
+            color: #6b7280;
+            transition: all 0.2s ease;
+            position: relative;
+            min-height: 60px;
+            gap: 0.25rem;
+        }
+        
+        .nav-item.active {
+            color: #4f46e5;
+        }
+        
+        .nav-item:active {
+            background: #f3f4f6;
+        }
+        
+        .nav-item .nav-icon {
+            font-size: 24px;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+        
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-item .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        
+        .nav-badge {
+            position: absolute;
+            top: 4px;
+            right: 50%;
+            transform: translateX(12px);
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
         }
         
         /* Mobile: Compact header */
@@ -163,15 +300,35 @@
             .card-compact {
                 padding: 1rem !important;
             }
+            
+            /* Full-width cards on mobile */
+            #resultsContainer {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            
+            .memorial-card {
+                margin-bottom: 0.75rem;
+            }
+        }
+        
+        /* Performance optimization */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body class="text-gray-900">
 
-    <!-- Modern Header -->
+    <!-- Modern Header - Simplified for Mobile -->
     <header class="glass-effect shadow-lg sticky top-0 z-50 border-b border-gray-200">
         <div class="max-w-6xl mx-auto px-4 py-3 md:py-4">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Desktop View -->
+            <div class="hidden md:flex flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
                     <button id="searchBtn" class="professional-btn px-4 py-2 rounded-lg font-semibold shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -200,8 +357,39 @@
                     <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent text-center" data-ar="سجل الوفيات - يانوح" data-he="רשומת הנפטרים - יאנוח">سجل الوفيات - يانوח</h1>
                 </div>
             </div>
+            
+            <!-- Mobile View - Compact -->
+            <div class="flex md:hidden justify-between items-center">
+                <h1 class="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent" data-ar="سجل الوفيات - يانوح" data-he="רשומת הנפטרים - יאנוח">سجل الوفيات - يانوح</h1>
+                <div class="stat-badge text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg">
+                    <span id="totalCounterMobile" class="text-sm">0</span>
+                </div>
+            </div>
         </div>
     </header>
+
+    <!-- Bottom Navigation (Mobile Only) -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item active" id="navHome">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label" data-ar="الرئيسية" data-he="ראשי">الرئيسية</span>
+        </a>
+        
+        <button class="nav-item" id="navSearch">
+            <span class="nav-icon">🔍</span>
+            <span class="nav-label" data-ar="البحث" data-he="חיפוש">البحث</span>
+        </button>
+        
+        <a href="login.html" class="nav-item" id="navAdd">
+            <span class="nav-icon">➕</span>
+            <span class="nav-label" data-ar="إضافة" data-he="הוספה">إضافة</span>
+        </a>
+        
+        <a href="stats.html" class="nav-item" id="navStats">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label" data-ar="الإحصائيات" data-he="סטטיסטיקה">الإحصائيات</span>
+        </a>
+    </nav>
 
     <!-- Search Modal -->
     <div id="searchModal" class="search-modal">
@@ -269,6 +457,7 @@
         </div>
     </div>
 
+    <script src="mobile-utils.js"></script>
     <script src="script.js"></script>
     
     <!-- PWA Service Worker Registration - TEMPORARILY DISABLED -->

@@ -2,7 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="format-detection" content="telephone=no">
     <title>تفاصيل المتوفى</title>    
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#667eea">
@@ -17,6 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="mobile-optimizations.css">
     <style>
         * { box-sizing: border-box; }
         body { 
@@ -32,21 +34,61 @@
             --border-color: #e2e8f0;
         }
         
+        /* Mobile-First Touch Targets */
+        button,
+        input,
+        textarea,
+        select,
+        a {
+            min-height: 48px;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+            touch-action: manipulation;
+        }
+        
+        @media (min-width: 768px) {
+            button { min-height: 44px; }
+        }
+        
+        input,
+        textarea {
+            font-size: 16px !important; /* Prevents iOS zoom */
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
         .gallery-img {
             cursor: pointer;
             transition: transform 0.2s;
+            border-radius: 12px;
+            overflow: hidden;
         }
         
         .gallery-img:active {
-            transform: scale(0.95);
+            transform: scale(0.96);
+        }
+        
+        .gallery-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            aspect-ratio: 1;
         }
         
         .comment-card {
             background: white;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 1rem;
             margin-bottom: 0.75rem;
             border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .max-w-4xl {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
         }
     </style>
 </head>
@@ -54,7 +96,7 @@
     <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
         <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-            <button onclick="window.history.back()" class="flex items-center gap-2 text-gray-700 hover:text-gray-900">
+            <button onclick="window.history.back()" class="flex items-center gap-2 text-gray-700 hover:text-gray-900 active:scale-95 transition-transform touch-manipulation" style="min-height: 48px; -webkit-tap-highlight-color: transparent;">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -107,7 +149,8 @@
                 
                 <button 
                     id="submitComment" 
-                    class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 active:scale-98"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 active:scale-98 transition-all touch-manipulation shadow-md hover:shadow-lg"
+                    style="min-height: 52px; -webkit-tap-highlight-color: transparent;"
                     data-ar="إضافة تعليق"
                     data-he="הוסף תגובה">
                     إضافة تعليق
@@ -121,6 +164,7 @@
         </div>
     </div>
 
+    <script src="mobile-utils.js"></script>
     <script src="person.js"></script>
 </body>
 </html>

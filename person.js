@@ -1,6 +1,6 @@
 // הגדרות חיבור - Supabase Settings
 const SUPABASE_URL = 'https://acjxhufnotvweoeoccvt.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Rcssx9MNIREdHWq27nOkWQ_ZvK5JPQV';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjanhodWZub3R2d2VvZW9jY3Z0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxODE2MjQsImV4cCI6MjA4NTc1NzYyNH0.TF79yXwg9T8sThhfw4P9vvb9iWY9qkzUVh6t-_v38iA';
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -139,12 +139,15 @@ function renderPhotos() {
     }
     
     const html = images.map(img => `
-        <div class="bg-white rounded-lg overflow-hidden shadow-sm">
+        <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
             <div class="aspect-square bg-gray-50 overflow-hidden flex items-center justify-center">
                 <img src="${baseImagePath + img.url}" 
                      alt="${img.description || ''}" 
                      class="w-full h-full object-contain gallery-img"
-                     onclick="window.open('${baseImagePath + img.url}', '_blank')">
+                     loading="lazy"
+                     decoding="async"
+                     onclick="window.open('${baseImagePath + img.url}', '_blank')"
+                     style="cursor: pointer; -webkit-tap-highlight-color: transparent;">
             </div>
             ${img.description ? `
                 <div class="p-2 text-right">
@@ -183,11 +186,17 @@ async function loadComments() {
     const html = data.map(comment => {
         const date = new Date(comment.created_at);
         const dateStr = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const timeStr = `${hours}:${minutes}`;
         
         return `
             <div class="comment-card">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm text-gray-500">${dateStr}</span>
+                    <div class="text-sm text-gray-500">
+                        <div>${dateStr}</div>
+                        <div class="text-xs">${timeStr}</div>
+                    </div>
                     <span class="font-semibold text-gray-900">${comment.author || 'مجهول'}</span>
                 </div>
                 <p class="text-gray-700 text-right">${comment.comment_text}</p>

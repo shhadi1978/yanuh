@@ -993,6 +993,38 @@ function showRecordModal(person) {
                         </select>
                     </div>
                     
+                    <!-- Father Selection -->
+                    <div class="text-right">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">👨 الأب</label>
+                        <input type="text" id="fatherSearch" placeholder="🔍 ابحث عن اسم الأب..." 
+                            class="w-full px-4 py-2 mb-2 border border-blue-300 rounded-lg text-right bg-blue-50 focus:bg-white focus:border-blue-500 focus:outline-none transition-colors"
+                            oninput="filterParentOptions('father')">
+                        <select id="father_id_death" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-right" size="5">
+                            <option value="0">-- غير معروف --</option>
+                            ${allRecords.filter(p => p.gender === 'male').map(p => {
+                                const fullName = `${p.title || ''} ${p.first_name || ''} ${p.middle_name || ''} ${p.last_name || ''}`.trim();
+                                const selected = person?.father_id_death === p.death_id ? 'selected' : '';
+                                return `<option value="${p.death_id}" ${selected} data-name="${fullName.toLowerCase()}">${fullName}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    
+                    <!-- Mother Selection -->
+                    <div class="text-right">
+                        <label class="block text-sm font-bold text-gray-700 mb-2">👩 الأم</label>
+                        <input type="text" id="motherSearch" placeholder="🔍 ابحث عن اسم الأم..." 
+                            class="w-full px-4 py-2 mb-2 border border-pink-300 rounded-lg text-right bg-pink-50 focus:bg-white focus:border-pink-500 focus:outline-none transition-colors"
+                            oninput="filterParentOptions('mother')">
+                        <select id="mother_id_death" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-right" size="5">
+                            <option value="0">-- غير معروفة --</option>
+                            ${allRecords.filter(p => p.gender === 'female').map(p => {
+                                const fullName = `${p.title || ''} ${p.first_name || ''} ${p.middle_name || ''} ${p.last_name || ''}`.trim();
+                                const selected = person?.mother_id_death === p.death_id ? 'selected' : '';
+                                return `<option value="${p.death_id}" ${selected} data-name="${fullName.toLowerCase()}">${fullName}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                    
                     <!-- Birth Date -->
                     <div class="text-right">
                         <label class="block text-sm font-bold text-gray-700 mb-2">تاريخ الولادة</label>
@@ -1088,6 +1120,8 @@ function showRecordModal(person) {
             last_name: document.getElementById('last_name').value.trim(),
             nickname: document.getElementById('nickname').value.trim(),
             gender: document.getElementById('gender').value,
+            father_id_death: parseInt(document.getElementById('father_id_death').value) || 0,
+            mother_id_death: parseInt(document.getElementById('mother_id_death').value) || 0,
             birth_date: document.getElementById('birth_date').value || null,
             death_date: document.getElementById('death_date').value || null,
             city: document.getElementById('city').value.trim(),
@@ -1148,6 +1182,45 @@ async function updateRecord(deathId, data) {
     localStorage.removeItem('memorial_cache');
     localStorage.removeItem('memorial_cache_time');
     localStorage.setItem('needs_refresh', 'true');
+}
+
+// Filter parent options in select lists
+function filterParentOptions(type) {
+    const searchInput = type === 'father' ? document.getElementById('fatherSearch') : document.getElementById('motherSearch');
+    const selectElement = type === 'father' ? document.getElementById('father_id_death') : document.getElementById('mother_id_death');
+    
+    if (!searchInput || !selectElement) return;
+    
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const options = selectElement.querySelectorAll('option');
+    
+    let visibleCount = 0;
+    options.forEach(option => {
+        const name = option.getAttribute('data-name') || '';
+        
+        // Always show "غير معروف/غير معروفة" option
+        if (option.value === '0') {
+            option.style.display = '';
+            visibleCount++;
+            return;
+        }
+        
+        // Filter based on search term
+        if (searchTerm === '' || name.includes(searchTerm)) {
+            option.style.display = '';
+            visibleCount++;
+        } else {
+            option.style.display = 'none';
+        }
+    });
+    
+    // Auto-select if only one visible option (excluding "غير معروف")
+    if (visibleCount === 2) {
+        const visibleOption = Array.from(options).find(opt => opt.value !== '0' && opt.style.display !== 'none');
+        if (visibleOption) {
+            selectElement.value = visibleOption.value;
+        }
+    }
 }
 
 // Close modal

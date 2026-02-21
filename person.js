@@ -40,6 +40,7 @@ async function loadPersonData() {
     renderPersonInfo();
     renderPhotos();
     loadComments();
+    loadFamilyTree();
 }
 
 // Render person information
@@ -205,6 +206,108 @@ async function loadComments() {
     }).join('');
 
     document.getElementById('commentsList').innerHTML = html;
+}
+
+// Load family tree
+async function loadFamilyTree() {
+    const fatherId = currentPerson.father_id_death;
+    const motherId = currentPerson.mother_id_death;
+    
+    // Fetch father data
+    let father = null;
+    if (fatherId && fatherId > 0) {
+        const { data } = await supabaseClient
+            .from('death')
+            .select('death_id, title, first_name, middle_name, last_name, nickname, gender')
+            .eq('death_id', fatherId)
+            .single();
+        father = data;
+    }
+    
+    // Fetch mother data
+    let mother = null;
+    if (motherId && motherId > 0) {
+        const { data } = await supabaseClient
+            .from('death')
+            .select('death_id, title, first_name, middle_name, last_name, nickname, gender')
+            .eq('death_id', motherId)
+            .single();
+        mother = data;
+    }
+    
+    // Fetch children (people who have this person as father or mother)
+    const { data: children } = await supabaseClient
+        .from('death')
+        .select('death_id, title, first_name, middle_name, last_name, nickname, gender')
+        .or(`father_id_death.eq.${deathId},mother_id_death.eq.${deathId}`)
+        .order('birth_date', { ascending: true });
+    
+    renderFamilyTree(father, mother, children || []);
+}
+
+function renderFamilyTree(father, mother, children) {
+    const buildPersonCard = (person, relationship) => {
+        if (!person) return '';
+        
+        const fullName = `${person.title || ''} ${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim();
+        const nickname = person.nickname ? `(${person.nickname})` : '';
+        const nameColor = person.gender === 'female' ? 'text-pink-600' : 'text-blue-600';
+        
+        return `
+            <div class="family-card cursor-pointer hover:shadow-lg transition-all" onclick="window.location.href='person.html?id=${person.death_id}'">
+                <div class="text-xs text-gray-500 mb-2">
+                    ${relationship === 'father' ? (currentLang === 'ar' ? 'الأب' : 'האב') : 
+                      relationship === 'mother' ? (currentLang === 'ar' ? 'الأم' : 'האם') : 
+                      (currentLang === 'ar' ? 'ابن/ابنة' : 'בן/בת')}
+                </div>
+                <div class="font-semibold ${nameColor} text-sm text-center leading-tight">
+                    ${fullName}
+                    ${nickname ? `<br><span class="text-xs text-gray-600">${nickname}</span>` : ''}
+                </div>
+            </div>
+        `;
+    };
+    
+    let html = '';
+    
+    // Parents section
+    if (father || mother) {
+        html += `
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4 text-right">
+                    ${currentLang === 'ar' ? '👫 الوالدين' : '👫 הורים'}
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                    ${father ? buildPersonCard(father, 'father') : `<div class="family-card opacity-50"><div class="text-3xl mb-2">👨</div><div class="text-sm text-gray-500">${currentLang === 'ar' ? 'غير معروف' : 'לא ידוע'}</div></div>`}
+                    ${mother ? buildPersonCard(mother, 'mother') : `<div class="family-card opacity-50"><div class="text-3xl mb-2">👩</div><div class="text-sm text-gray-500">${currentLang === 'ar' ? 'غير معروفة' : 'לא ידועה'}</div></div>`}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Children section
+    if (children && children.length > 0) {
+        html += `
+            <div>
+                <h3 class="text-lg font-bold text-gray-900 mb-4 text-right">
+                    ${currentLang === 'ar' ? '👶 الأبناء' : '👶 ילדים'} (${children.length})
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    ${children.map(child => buildPersonCard(child, 'child')).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    if (!html) {
+        html = `
+            <div class="text-center text-gray-500 py-8">
+                ${currentLang === 'ar' ? 'لا توجد معلومات عن العائلة' : 'אין מידע על המשפחה'}
+            </div>
+        `;
+    }
+    
+    document.getElementById('familyTree').innerHTML = html;
 }
 
 // Submit comment

@@ -78,6 +78,29 @@
             background: white;
             border-radius: 12px;
             padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .family-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .family-card:hover {
+            transform: translateY(-4px);
+            border-color: #667eea;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+        }
+        
+        .family-card:active {
+            transform: translateY(-2px);
+        }
             margin-bottom: 0.75rem;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -122,6 +145,18 @@
             <h3 class="text-xl font-bold mb-4 text-gray-900" data-ar="معرض الصور" data-he="גלריית תמונות">معرض الصور</h3>
             <div id="photosGallery" class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <!-- Photos will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Family Tree Section -->
+        <div class="mb-6">
+            <h3 class="text-xl font-bold mb-4 text-gray-900" data-ar="🌳 شجرة العائلة" data-he="🌳 עץ משפחה">🌳 شجرة العائلة</h3>
+            <div id="familyTree" class="bg-white rounded-lg shadow-sm p-6">
+                <!-- Family tree will be loaded here -->
+                <div class="animate-pulse">
+                    <div class="h-20 bg-gray-200 rounded mb-4"></div>
+                    <div class="h-20 bg-gray-200 rounded"></div>
+                </div>
             </div>
         </div>
 

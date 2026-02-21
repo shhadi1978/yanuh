@@ -38,6 +38,12 @@ async function loadData(forceRefresh = false) {
         allDeceased = JSON.parse(cachedData);
         renderInitialCards();
         updateCounter(allDeceased.length);
+        
+        // Restore scroll position after initial render from cache
+        setTimeout(() => {
+            restoreScrollPosition();
+        }, 150);
+        
         return;
     }
     
@@ -97,6 +103,11 @@ async function loadData(forceRefresh = false) {
     renderInitialCards();
     setupInfiniteScroll();
     updateCounter(allDeceased.length);
+    
+    // Restore scroll position after initial render
+    setTimeout(() => {
+        restoreScrollPosition();
+    }, 150);
 }
 
 // טעינה הדרגתית ראשונית
@@ -189,6 +200,109 @@ function calculateAge(birthDate, deathDate) {
     return Math.floor(age);
 }
 
+// Get correct plural form for Arabic and Hebrew
+function getPluralForm(number, lang, unit) {
+    if (lang === 'ar') {
+        const forms = {
+            minute: ['دقيقة', 'دقيقتان', 'دقائق', 'دقيقة'],
+            hour: ['ساعة', 'ساعتان', 'ساعات', 'ساعة'],
+            day: ['يوم', 'يومان', 'أيام', 'يوم'],
+            week: ['أسبوع', 'أسبوعان', 'أسابيع', 'أسبوع'],
+            month: ['شهر', 'شهران', 'أشهر', 'شهر'],
+            year: ['سنة', 'سنتان', 'سنوات', 'سنة']
+        };
+        
+        const unitForms = forms[unit];
+        if (!unitForms) return unit;
+        
+        if (number === 1) return unitForms[0]; // مفرد
+        if (number === 2) return unitForms[1]; // مثنى
+        if (number >= 3 && number <= 10) return unitForms[2]; // جمع
+        return unitForms[3]; // 11+
+    } else if (lang === 'he') {
+        const forms = {
+            minute: ['דקה', 'דקות'],
+            hour: ['שעה', 'שעות'],
+            day: ['יום', 'ימים'],
+            week: ['שבוע', 'שבועות'],
+            month: ['חודש', 'חודשים'],
+            year: ['שנה', 'שנים']
+        };
+        
+        const unitForms = forms[unit];
+        if (!unitForms) return unit;
+        
+        return number === 1 ? unitForms[0] : unitForms[1];
+    }
+    return unit;
+}
+
+// Calculate time since death (Facebook style)
+function getTimeSinceDeath(deathDate) {
+    if (!deathDate) return null;
+    
+    const death = new Date(deathDate);
+    const now = new Date();
+    const diffMs = now - death;
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30.44);
+    const diffYears = Math.floor(diffDays / 365.25);
+    
+    let timeText = '';
+    let icon = '⏳';
+    
+    if (diffSecs < 60) {
+        timeText = currentLang === 'ar' ? 'الآن' : 'עכשיו';
+        icon = '⏰';
+    } else if (diffMins < 60) {
+        const minWord = getPluralForm(diffMins, currentLang, 'minute');
+        timeText = currentLang === 'ar' ? `منذ ${diffMins} ${minWord}` : `לפני ${diffMins} ${minWord}`;
+        icon = '⏰';
+    } else if (diffHours < 24) {
+        const hourWord = getPluralForm(diffHours, currentLang, 'hour');
+        timeText = currentLang === 'ar' ? `منذ ${diffHours} ${hourWord}` : `לפני ${diffHours} ${hourWord}`;
+        icon = '⏰';
+    } else if (diffDays < 7) {
+        const dayWord = getPluralForm(diffDays, currentLang, 'day');
+        timeText = currentLang === 'ar' ? `منذ ${diffDays} ${dayWord}` : `לפני ${diffDays} ${dayWord}`;
+        icon = '📅';
+    } else if (diffWeeks < 4) {
+        const weekWord = getPluralForm(diffWeeks, currentLang, 'week');
+        timeText = currentLang === 'ar' ? `منذ ${diffWeeks} ${weekWord}` : `לפני ${diffWeeks} ${weekWord}`;
+        icon = '📆';
+    } else if (diffMonths < 12) {
+        const monthWord = getPluralForm(diffMonths, currentLang, 'month');
+        const remainingDays = diffDays - Math.floor(diffMonths * 30);
+        if (remainingDays > 7) {
+            const dayWord = getPluralForm(remainingDays, currentLang, 'day');
+            timeText = currentLang === 'ar' ? 
+                `منذ ${diffMonths} ${monthWord} و ${remainingDays} ${dayWord}` : 
+                `לפני ${diffMonths} ${monthWord} ו-${remainingDays} ${dayWord}`;
+        } else {
+            timeText = currentLang === 'ar' ? `منذ ${diffMonths} ${monthWord}` : `לפני ${diffMonths} ${monthWord}`;
+        }
+        icon = '🗓️';
+    } else {
+        const yearWord = getPluralForm(diffYears, currentLang, 'year');
+        const remainingMonths = diffMonths - (diffYears * 12);
+        if (remainingMonths > 0) {
+            const monthWord = getPluralForm(remainingMonths, currentLang, 'month');
+            timeText = currentLang === 'ar' ? 
+                `منذ ${diffYears} ${yearWord} و ${remainingMonths} ${monthWord}` : 
+                `לפני ${diffYears} ${yearWord} ו-${remainingMonths} ${monthWord}`;
+        } else {
+            timeText = currentLang === 'ar' ? `منذ ${diffYears} ${yearWord}` : `לפני ${diffYears} ${yearWord}`;
+        }
+        icon = '🕰️';
+    }
+    
+    return { text: timeText, icon: icon };
+}
+
 // פונקציה להצגת הכרטיסים
 function renderCards(data, append = false) {
     const container = document.getElementById('resultsContainer');
@@ -233,6 +347,9 @@ function renderCards(data, append = false) {
         const birthDate = formatDate(person.birth_date);
         const deathDate = formatDate(person.death_date);
         
+        // Get time since death
+        const timeSinceDeath = getTimeSinceDeath(person.death_date);
+        
         // Get cover image from images array
         const coverImage = person.images?.find(img => img.cover === true && img.display === true);
         const baseImagePath = 'https://acjxhufnotvweoeoccvt.supabase.co/storage/v1/object/public/photos/';
@@ -246,19 +363,19 @@ function renderCards(data, append = false) {
         if (coverImage && coverImage.url) {
             const fullImageUrl = baseImagePath + coverImage.url;
             imageSection = `
-                <div class="w-full aspect-square bg-gray-50 relative overflow-hidden flex items-center justify-center">
+                <div class="w-full h-64 sm:h-72 md:h-80 lg:h-96 bg-gradient-to-br from-gray-100 via-gray-50 to-white relative overflow-hidden flex items-center justify-center group">
                     <img src="${fullImageUrl}" 
                          alt="${fullName}" 
-                         class="w-full h-full object-contain"
+                         class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                          loading="lazy"
                          decoding="async"
                          fetchpriority="low"
-                         onerror="this.parentElement.style.cssText='background: #f9fafb;'; this.src='${defaultAvatar}';">
+                         onerror="this.parentElement.style.cssText='background: linear-gradient(135deg, #f3f4f6 0%, #f9fafb 50%, #ffffff 100%);'; this.src='${defaultAvatar}'; this.className='w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105';">
                     ${ageDisplay ? `
-                    <div class="absolute bottom-3 right-3 backdrop-blur-md bg-white/95 px-4 py-2 rounded-xl shadow-lg border border-gray-200/50">
+                    <div class="absolute bottom-3 right-3 backdrop-blur-xl bg-white/90 px-4 py-2.5 rounded-2xl shadow-xl border border-white/50 transition-all duration-300 group-hover:shadow-2xl group-hover:scale-105">
                         <div class="flex items-center gap-2">
-                            <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">${age}</span>
-                            <span class="text-xs font-semibold text-gray-600">سنة</span>
+                            <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">${age}</span>
+                            <span class="text-xs font-semibold text-gray-700">سنة</span>
                         </div>
                     </div>
                     ` : ''}
@@ -266,17 +383,17 @@ function renderCards(data, append = false) {
             `;
         } else {
             imageSection = `
-                <div class="w-full aspect-square bg-gray-50 relative overflow-hidden">
+                <div class="w-full h-64 sm:h-72 md:h-80 lg:h-96 bg-gradient-to-br from-gray-100 via-gray-50 to-white relative overflow-hidden flex items-center justify-center group">
                     <img src="${defaultAvatar}" 
                          alt="${fullName}" 
-                         class="w-full h-full object-contain p-4"
+                         class="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105 opacity-60"
                          loading="lazy"
                          decoding="async">
                     ${ageDisplay ? `
-                    <div class="absolute bottom-3 right-3 backdrop-blur-md bg-white/95 px-4 py-2 rounded-xl shadow-lg border border-gray-200/50">
+                    <div class="absolute bottom-3 right-3 backdrop-blur-xl bg-white/90 px-4 py-2.5 rounded-2xl shadow-xl border border-white/50 transition-all duration-300 group-hover:shadow-2xl group-hover:scale-105">
                         <div class="flex items-center gap-2">
-                            <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">${age}</span>
-                            <span class="text-xs font-semibold text-gray-600">سنة</span>
+                            <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">${age}</span>
+                            <span class="text-xs font-semibold text-gray-700">سنة</span>
                         </div>
                     </div>
                     ` : ''}
@@ -285,11 +402,13 @@ function renderCards(data, append = false) {
         }
         
         const card = `
-            <div class="memorial-card rounded-lg shadow-sm overflow-hidden cursor-pointer touch-manipulation" onclick="window.location.href='person.html?id=${person.death_id}'" style="-webkit-tap-highlight-color: transparent;">
+            <div class="memorial-card bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-2 border border-gray-100 hover:border-purple-200" 
+                 onclick="saveScrollAndNavigate('person.html?id=${person.death_id}')" 
+                 style="-webkit-tap-highlight-color: transparent;">
                 <!-- Name Section - First -->
-                <div class="p-4 pb-3 bg-gradient-to-b from-gray-50 to-white border-b border-gray-100">
+                <div class="p-5 pb-4 bg-gradient-to-b from-gray-50 via-white to-white border-b-2 border-gray-100">
                     <h2 class="text-lg font-bold ${nameColor} leading-snug text-right drop-shadow-sm">
-                        <span class="inline-block">${fullName}</span>${nickname ? ` <span class="text-gray-600 text-base font-normal inline-block">${nickname}</span>` : ''}
+                        <span class="inline-block">${fullName}</span>${nickname ? ` <span class="text-gray-500 text-base font-normal inline-block">${nickname}</span>` : ''}
                     </h2>
                 </div>
                 
@@ -297,26 +416,38 @@ function renderCards(data, append = false) {
                 ${imageSection}
                 
                 <!-- Info Section -->
-                <div class="p-3">
+                <div class="p-4 bg-gradient-to-b from-white to-gray-50">
                     <!-- Birth Date -->
-                    <div class="mb-2 text-right">
-                        <div class="text-xs text-gray-500 mb-0.5">
-                            ${currentLang === 'ar' ? 'تاريخ الولادة' : 'תאריך לידה'}
+                    <div class="mb-3 text-right bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
+                        <div class="text-xs text-gray-500 mb-1 font-medium">
+                            ${currentLang === 'ar' ? '📅 تاريخ الولادة' : '📅 תאריך לידה'}
                         </div>
-                        <div class="text-sm font-semibold text-gray-900" data-birth-year="${person.birth_date ? new Date(person.birth_date).getFullYear() : ''}">
+                        <div class="text-sm font-bold text-gray-900" data-birth-year="${person.birth_date ? new Date(person.birth_date).getFullYear() : ''}">
                             ${birthDate}
                         </div>
                     </div>
                     
                     <!-- Death Date -->
-                    <div class="mb-1 text-right">
-                        <div class="text-xs text-gray-500 mb-0.5">
-                            ${currentLang === 'ar' ? 'تاريخ الوفاة' : 'תאריך פטירה'}
+                    <div class="mb-3 text-right bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
+                        <div class="text-xs text-gray-500 mb-1 font-medium">
+                            ${currentLang === 'ar' ? '🕊️ تاريخ الوفاة' : '🕊️ תאריך פטירה'}
                         </div>
-                        <div class="text-sm font-semibold text-gray-900" data-death-year="${person.death_date ? new Date(person.death_date).getFullYear() : ''}">
+                        <div class="text-sm font-bold text-gray-900" data-death-year="${person.death_date ? new Date(person.death_date).getFullYear() : ''}">
                             ${deathDate}
                         </div>
                     </div>
+                    
+                    ${timeSinceDeath ? `
+                    <!-- Time Since Death -->
+                    <div class="mt-3 bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 border-2 border-purple-200 rounded-xl p-3 shadow-md">
+                        <div class="flex items-center justify-end gap-2">
+                            <div class="text-right flex-grow">
+                                <div class="text-xs font-bold text-purple-900">${timeSinceDeath.text}</div>
+                            </div>
+                            <span class="text-xl">${timeSinceDeath.icon}</span>
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -397,6 +528,28 @@ function setupSearch() {
             }, 300);
         });
     });
+}
+
+// Save scroll position before navigation
+function saveScrollAndNavigate(url) {
+    sessionStorage.setItem('memorial_scroll_position', window.scrollY);
+    window.location.href = url;
+}
+
+// Restore scroll position on page load
+function restoreScrollPosition() {
+    const savedPosition = sessionStorage.getItem('memorial_scroll_position');
+    if (savedPosition) {
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(() => {
+            window.scrollTo({
+                top: parseInt(savedPosition),
+                behavior: 'instant'
+            });
+        });
+        // Clear after restore
+        sessionStorage.removeItem('memorial_scroll_position');
+    }
 }
 
 // מערכת שפה
@@ -538,7 +691,78 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
         console.error('❌ Error setting up pull-to-refresh:', error);
     }
+    
+    // Track home page visit
+    trackHomePageVisit();
 });
+
+// Check if user is admin
+function isAdmin() {
+    const adminUser = sessionStorage.getItem('adminUser');
+    if (adminUser) {
+        try {
+            const user = JSON.parse(adminUser);
+            return user.is_admin === 1 || user.is_admin === true;
+        } catch (e) {
+            return false;
+        }
+    }
+    return false;
+}
+
+// Track home page visit (once per unique visitor)
+async function trackHomePageVisit() {
+    // Don't track admin visits
+    if (isAdmin()) {
+        console.log('ℹ️ Admin visit - not tracked');
+        return;
+    }
+    
+    try {
+        const userAgent = navigator.userAgent.substring(0, 255);
+        const ipHash = await createSimpleHash(navigator.userAgent + navigator.language + screen.width + screen.height);
+        
+        // Check if this visitor already visited the home page
+        const { data: existingVisit } = await supabaseClient
+            .from('page_visits')
+            .select('visit_id')
+            .eq('page_type', 'home')
+            .eq('ip_hash', ipHash)
+            .limit(1);
+        
+        if (existingVisit && existingVisit.length > 0) {
+            console.log('✅ Home visit already tracked for this visitor');
+            return;
+        }
+        
+        const { error } = await supabaseClient
+            .from('page_visits')
+            .insert([{
+                page_type: 'home',
+                death_id: null,
+                visit_date: new Date().toISOString(),
+                ip_hash: ipHash,
+                user_agent: userAgent
+            }]);
+        
+        if (error) {
+            console.warn('Failed to track home visit:', error);
+        } else {
+            console.log('✅ Home visit tracked successfully');
+        }
+    } catch (e) {
+        console.warn('Failed to track home visit:', e);
+    }
+}
+
+// Create simple hash for privacy
+async function createSimpleHash(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 64);
+}
 
 // Auto-refresh when returning to page
 document.addEventListener('visibilitychange', () => {

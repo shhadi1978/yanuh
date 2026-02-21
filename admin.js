@@ -145,6 +145,7 @@ function switchTab(tabName) {
     if (tabName === 'images') loadImagesStats();
     if (tabName === 'comments') loadComments();
     if (tabName === 'users') loadUsers();
+    if (tabName === 'visits') loadVisitsStats();
 }
 
 // Search records function
@@ -1543,3 +1544,127 @@ async function hashPassword(password) {
 }
 
 // ==================== END USERS MANAGEMENT ====================
+
+// ==================== VISITS STATISTICS ====================
+
+async function loadVisitsStats() {
+    try {
+        // Home page stats
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        
+        // Home - Today
+        const { count: homeToday } = await supabaseClient
+            .from('page_visits')
+            .select('*', { count: 'exact', head: true })
+            .eq('page_type', 'home')
+            .gte('visit_date', today.toISOString());
+        
+        // Home - This Month
+        const { count: homeMonth } = await supabaseClient
+            .from('page_visits')
+            .select('*', { count: 'exact', head: true })
+            .eq('page_type', 'home')
+            .gte('visit_date', startOfMonth.toISOString());
+        
+        // Home - Total
+        const { count: homeTotal } = await supabaseClient
+            .from('page_visits')
+            .select('*', { count: 'exact', head: true })
+            .eq('page_type', 'home');
+        
+        // Person pages - Total only
+        const { count: personTotal } = await supabaseClient
+            .from('page_visits')
+            .select('*', { count: 'exact', head: true })
+            .eq('page_type', 'person');
+        
+        // Update cards
+        document.getElementById('homeTodayCount').textContent = homeToday || 0;
+        document.getElementById('homeMonthCount').textContent = homeMonth || 0;
+        document.getElementById('homeTotalCount').textContent = homeTotal || 0;
+        document.getElementById('personTotalCount').textContent = personTotal || 0;
+        
+        // Load most visited pages
+        loadMostVisitedPages();
+    } catch (error) {
+        console.error('Error loading visit stats:', error);
+    }
+}
+
+async function loadMostVisitedPages() {
+    try {
+        // Get visit counts grouped by death_id
+        const { data: visits, error } = await supabaseClient
+            .from('page_visits')
+            .select('death_id')
+            .not('death_id', 'is', null);
+        
+        if (error) throw error;
+        
+        // Count visits per person
+        const visitCounts = {};
+        visits.forEach(visit => {
+            visitCounts[visit.death_id] = (visitCounts[visit.death_id] || 0) + 1;
+        });
+        
+        // Sort by visit count
+        const sortedPersons = Object.entries(visitCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10); // Top 10
+        
+        // Fetch person details
+        const personIds = sortedPersons.map(([id]) => parseInt(id));
+        const { data: persons } = await supabaseClient
+            .from('death')
+            .select('death_id, title, first_name, middle_name, last_name, nickname, gender')
+            .in('death_id', personIds);
+        
+        // Create HTML
+        const container = document.getElementById('mostVisitedList');
+        if (!persons || persons.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-8">لا توجد بيانات</p>';
+            return;
+        }
+        
+        // Map persons with their visit counts
+        const personsWithCounts = persons.map(person => {
+            const count = visitCounts[person.death_id];
+            return { ...person, visitCount: count };
+        }).sort((a, b) => b.visitCount - a.visitCount);
+        
+        container.innerHTML = personsWithCounts.map((person, index) => {
+            const fullName = `${person.title || ''} ${person.first_name || ''} ${person.middle_name || ''} ${person.last_name || ''}`.trim();
+            const nickname = person.nickname ? `(${person.nickname})` : '';
+            const nameColor = person.gender === 'female' ? 'text-pink-600' : 'text-blue-600';
+            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+            
+            return `
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer" onclick="window.open('person.html?id=${person.death_id}', '_blank')">
+                    <div class="flex items-center gap-4">
+                        <div class="text-2xl font-bold text-gray-400 w-8">${medal}</div>
+                        <div class="text-right">
+                            <div class="font-bold ${nameColor}">
+                                ${fullName}
+                                ${nickname ? `<span class="text-sm text-gray-600">${nickname}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl font-bold text-blue-600">${person.visitCount}</span>
+                        <span class="text-sm text-gray-600">👁️</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+    } catch (error) {
+        console.error('Error loading most visited pages:', error);
+    }
+}
+
+// ==================== END VISITS STATISTICS ====================

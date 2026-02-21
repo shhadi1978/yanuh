@@ -66,6 +66,73 @@ function renderPersonInfo() {
         return age;
     };
     
+    // Calculate time since death (Facebook style)
+    const getTimeSinceDeath = (deathDate) => {
+        if (!deathDate) return null;
+        
+        const death = new Date(deathDate);
+        const now = new Date();
+        const diffMs = now - death;
+        const diffSecs = Math.floor(diffMs / 1000);
+        const diffMins = Math.floor(diffSecs / 60);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        const diffWeeks = Math.floor(diffDays / 7);
+        const diffMonths = Math.floor(diffDays / 30.44);
+        const diffYears = Math.floor(diffDays / 365.25);
+        
+        let timeText = '';
+        let icon = '⏳';
+        
+        if (diffSecs < 60) {
+            timeText = currentLang === 'ar' ? 'الآن' : 'עכשיו';
+            icon = '⏰';
+        } else if (diffMins < 60) {
+            const minWord = getPluralForm(diffMins, currentLang, 'minute');
+            timeText = currentLang === 'ar' ? `منذ ${diffMins} ${minWord}` : `לפני ${diffMins} ${minWord}`;
+            icon = '⏰';
+        } else if (diffHours < 24) {
+            const hourWord = getPluralForm(diffHours, currentLang, 'hour');
+            timeText = currentLang === 'ar' ? `منذ ${diffHours} ${hourWord}` : `לפני ${diffHours} ${hourWord}`;
+            icon = '⏰';
+        } else if (diffDays < 7) {
+            const dayWord = getPluralForm(diffDays, currentLang, 'day');
+            timeText = currentLang === 'ar' ? `منذ ${diffDays} ${dayWord}` : `לפני ${diffDays} ${dayWord}`;
+            icon = '📅';
+        } else if (diffWeeks < 4) {
+            const weekWord = getPluralForm(diffWeeks, currentLang, 'week');
+            timeText = currentLang === 'ar' ? `منذ ${diffWeeks} ${weekWord}` : `לפני ${diffWeeks} ${weekWord}`;
+            icon = '📆';
+        } else if (diffMonths < 12) {
+            const monthWord = getPluralForm(diffMonths, currentLang, 'month');
+            const remainingDays = diffDays - Math.floor(diffMonths * 30);
+            if (remainingDays > 7) {
+                const dayWord = getPluralForm(remainingDays, currentLang, 'day');
+                timeText = currentLang === 'ar' ? 
+                    `منذ ${diffMonths} ${monthWord} و ${remainingDays} ${dayWord}` : 
+                    `לפני ${diffMonths} ${monthWord} ו-${remainingDays} ${dayWord}`;
+            } else {
+                timeText = currentLang === 'ar' ? `منذ ${diffMonths} ${monthWord}` : `לפני ${diffMonths} ${monthWord}`;
+            }
+            icon = '🗓️';
+        } else {
+            const yearWord = getPluralForm(diffYears, currentLang, 'year');
+            const remainingMonths = diffMonths - (diffYears * 12);
+            if (remainingMonths > 0) {
+                const monthWord = getPluralForm(remainingMonths, currentLang, 'month');
+                timeText = currentLang === 'ar' ? 
+                    `منذ ${diffYears} ${yearWord} و ${remainingMonths} ${monthWord}` : 
+                    `לפני ${diffYears} ${yearWord} ו-${remainingMonths} ${monthWord}`;
+            } else {
+                timeText = currentLang === 'ar' ? `منذ ${diffYears} ${yearWord}` : `לפני ${diffYears} ${yearWord}`;
+            }
+            icon = '🕰️';
+        }
+        
+        return { text: timeText, icon: icon };
+    };
+    
+    const timeSinceDeath = getTimeSinceDeath(currentPerson.death_date);
     const age = calculateAge(currentPerson.birth_date, currentPerson.death_date);
     const nameColor = currentPerson.gender === 'female' ? 'text-pink-600' : 'text-blue-600';
     
@@ -91,11 +158,25 @@ function renderPersonInfo() {
         </div>
         
         ${age ? `
-        <div class="mb-6 text-right">
+        <div class="mb-4 text-right">
             <div class="flex items-baseline gap-2">
                 <span class="text-sm text-gray-500">${currentLang === 'ar' ? 'العمر' : 'גיל'}:</span>
                 <span class="text-4xl font-bold text-gray-900">${age}</span>
                 <span class="text-lg font-semibold text-gray-600">${currentLang === 'ar' ? 'سنة' : 'שנה'}</span>
+            </div>
+        </div>
+        ` : ''}
+        
+        ${timeSinceDeath ? `
+        <div class="mb-6">
+            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-400 rounded-lg p-4 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">${timeSinceDeath.icon}</span>
+                    <div class="flex-grow text-right">
+                        <div class="text-xs text-gray-500 mb-1">${currentLang === 'ar' ? 'مضى على رحيله' : 'עברו מאז פטירתו'}</div>
+                        <div class="text-2xl font-bold text-purple-700">${timeSinceDeath.text}</div>
+                    </div>
+                </div>
             </div>
         </div>
         ` : ''}
@@ -242,10 +323,32 @@ async function loadFamilyTree() {
         .or(`father_id_death.eq.${deathId},mother_id_death.eq.${deathId}`)
         .order('birth_date', { ascending: true });
     
-    renderFamilyTree(father, mother, children || []);
+    // Fetch siblings (people who share the same father or mother)
+    let siblings = [];
+    if ((fatherId && fatherId > 0) || (motherId && motherId > 0)) {
+        const { data } = await supabaseClient
+            .from('death')
+            .select('death_id, title, first_name, middle_name, last_name, nickname, gender, birth_date, father_id_death, mother_id_death')
+            .neq('death_id', deathId); // Exclude current person
+        
+        if (data) {
+            // Filter siblings who share at least one parent
+            siblings = data.filter(person => {
+                const sharesFather = fatherId && fatherId > 0 && person.father_id_death === fatherId;
+                const sharesMother = motherId && motherId > 0 && person.mother_id_death === motherId;
+                return sharesFather || sharesMother;
+            }).sort((a, b) => {
+                const dateA = a.birth_date ? new Date(a.birth_date) : new Date(0);
+                const dateB = b.birth_date ? new Date(b.birth_date) : new Date(0);
+                return dateA - dateB;
+            });
+        }
+    }
+    
+    renderFamilyTree(father, mother, children || [], siblings || []);
 }
 
-function renderFamilyTree(father, mother, children) {
+function renderFamilyTree(father, mother, children, siblings) {
     const buildPersonCard = (person, relationship) => {
         if (!person) return '';
         
@@ -258,6 +361,7 @@ function renderFamilyTree(father, mother, children) {
                 <div class="text-xs text-gray-500 mb-2">
                     ${relationship === 'father' ? (currentLang === 'ar' ? 'الأب' : 'האב') : 
                       relationship === 'mother' ? (currentLang === 'ar' ? 'الأم' : 'האם') : 
+                      relationship === 'sibling' ? (currentLang === 'ar' ? 'أخ/أخت' : 'אח/אחות') :
                       (currentLang === 'ar' ? 'ابن/ابنة' : 'בן/בת')}
                 </div>
                 <div class="font-semibold ${nameColor} text-sm text-center leading-tight">
@@ -280,6 +384,20 @@ function renderFamilyTree(father, mother, children) {
                 <div class="grid grid-cols-2 gap-4">
                     ${father ? buildPersonCard(father, 'father') : `<div class="family-card opacity-50"><div class="text-3xl mb-2">👨</div><div class="text-sm text-gray-500">${currentLang === 'ar' ? 'غير معروف' : 'לא ידוע'}</div></div>`}
                     ${mother ? buildPersonCard(mother, 'mother') : `<div class="family-card opacity-50"><div class="text-3xl mb-2">👩</div><div class="text-sm text-gray-500">${currentLang === 'ar' ? 'غير معروفة' : 'לא ידועה'}</div></div>`}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Siblings section
+    if (siblings && siblings.length > 0) {
+        html += `
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4 text-right">
+                    ${currentLang === 'ar' ? '👥 الإخوة والأخوات' : '👥 אחים ואחיות'} (${siblings.length})
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    ${siblings.map(sibling => buildPersonCard(sibling, 'sibling')).join('')}
                 </div>
             </div>
         `;
@@ -381,6 +499,218 @@ function updateLanguage() {
     }
 }
 
+// ==================== VISIT TRACKING ====================
+
+// Check if user is admin
+function isAdmin() {
+    const adminUser = sessionStorage.getItem('adminUser');
+    if (adminUser) {
+        try {
+            const user = JSON.parse(adminUser);
+            return user.is_admin === 1 || user.is_admin === true;
+        } catch (e) {
+            return false;
+        }
+    }
+    return false;
+}
+
+// Track page visit (once per unique visitor)
+async function trackPageVisit() {
+    if (!deathId) return;
+    
+    // Don't track admin visits
+    if (isAdmin()) {
+        console.log('ℹ️ Admin visit - not tracked');
+        return;
+    }
+    
+    try {
+        // Get user agent and create stable IP hash
+        const userAgent = navigator.userAgent.substring(0, 255);
+        const ipHash = await createSimpleHash(navigator.userAgent + navigator.language + screen.width + screen.height);
+        
+        // Check if this visitor already visited this page
+        const { data: existingVisit } = await supabaseClient
+            .from('page_visits')
+            .select('visit_id')
+            .eq('page_type', 'person')
+            .eq('death_id', parseInt(deathId))
+            .eq('ip_hash', ipHash)
+            .limit(1);
+        
+        if (existingVisit && existingVisit.length > 0) {
+            console.log('✅ Visit already tracked for this visitor');
+            return;
+        }
+        
+        const { error } = await supabaseClient
+            .from('page_visits')
+            .insert([{
+                page_type: 'person',
+                death_id: parseInt(deathId),
+                visit_date: new Date().toISOString(),
+                ip_hash: ipHash,
+                user_agent: userAgent
+            }]);
+        
+        if (error) {
+            console.warn('Failed to track visit:', error);
+        } else {
+            console.log('✅ Visit tracked successfully');
+        }
+    } catch (e) {
+        console.warn('Visit tracking error:', e);
+    }
+}
+
+// Create simple hash for IP privacy
+async function createSimpleHash(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 64);
+}
+
+// Get correct plural form for Arabic and Hebrew
+function getPluralForm(number, lang, unit) {
+    if (lang === 'ar') {
+        const forms = {
+            minute: ['دقيقة', 'دقيقتان', 'دقائق', 'دقيقة'],
+            hour: ['ساعة', 'ساعتان', 'ساعات', 'ساعة'],
+            day: ['يوم', 'يومان', 'أيام', 'يوم'],
+            week: ['أسبوع', 'أسبوعان', 'أسابيع', 'أسبوع'],
+            month: ['شهر', 'شهران', 'أشهر', 'شهر'],
+            year: ['سنة', 'سنتان', 'سنوات', 'سنة']
+        };
+        
+        const unitForms = forms[unit];
+        if (!unitForms) return unit;
+        
+        if (number === 1) return unitForms[0]; // مفرد
+        if (number === 2) return unitForms[1]; // مثنى
+        if (number >= 3 && number <= 10) return unitForms[2]; // جمع
+        return unitForms[3]; // 11+
+    } else if (lang === 'he') {
+        const forms = {
+            minute: ['דקה', 'דקות'],
+            hour: ['שעה', 'שעות'],
+            day: ['יום', 'ימים'],
+            week: ['שבוע', 'שבועות'],
+            month: ['חודש', 'חודשים'],
+            year: ['שנה', 'שנים']
+        };
+        
+        const unitForms = forms[unit];
+        if (!unitForms) return unit;
+        
+        return number === 1 ? unitForms[0] : unitForms[1];
+    }
+    return unit;
+}
+
+// Get visit statistics
+async function getVisitStats() {
+    if (!deathId || !isAdmin()) return null;
+    
+    try {
+        // Total visits
+        const { count: totalVisits } = await supabaseClient
+            .from('page_visits')
+            .select('*', { count: 'exact', head: true })
+            .eq('death_id', deathId);
+        
+        // Last visit
+        const { data: lastVisit } = await supabaseClient
+            .from('page_visits')
+            .select('visit_date')
+            .eq('death_id', deathId)
+            .order('visit_date', { ascending: false })
+            .limit(1)
+            .single();
+        
+        // Visits this month
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        
+        const { count: monthVisits } = await supabaseClient
+            .from('page_visits')
+            .select('*', { count: 'exact', head: true })
+            .eq('death_id', deathId)
+            .gte('visit_date', startOfMonth.toISOString());
+        
+        return {
+            totalVisits: totalVisits || 0,
+            lastVisit: lastVisit?.visit_date || null,
+            monthVisits: monthVisits || 0
+        };
+    } catch (e) {
+        console.error('Failed to get visit stats:', e);
+        return null;
+    }
+}
+
+// Display visit statistics (admin only)
+async function displayVisitStats() {
+    if (!isAdmin()) return;
+    
+    const stats = await getVisitStats();
+    if (!stats) return;
+    
+    // Format last visit time
+    let lastVisitText = 'غير متاح';
+    if (stats.lastVisit) {
+        const lastDate = new Date(stats.lastVisit);
+        const now = new Date();
+        const diffMs = now - lastDate;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffMins < 1) {
+            lastVisitText = 'الآن';
+        } else if (diffMins < 60) {
+            lastVisitText = `قبل ${diffMins} دقيقة`;
+        } else if (diffHours < 24) {
+            lastVisitText = `قبل ${diffHours} ساعة`;
+        } else {
+            lastVisitText = `قبل ${diffDays} يوم`;
+        }
+    }
+    
+    // Create stats content
+    const statsHTML = `
+        <h3 class="text-xl font-bold mb-4 text-gray-900">📊 إحصائيات الزيارات (للمدير فقط)</h3>
+        <div class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl shadow-sm">
+            <div class="p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="bg-white rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-blue-600">${stats.totalVisits}</div>
+                        <div class="text-sm text-gray-600 mt-2">👁️ إجمالي الزيارات</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-green-600">${stats.monthVisits}</div>
+                        <div class="text-sm text-gray-600 mt-2">📈 هذا الشهر</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 text-center">
+                        <div class="text-lg font-bold text-orange-600">${lastVisitText}</div>
+                        <div class="text-sm text-gray-600 mt-2">📅 آخر زيارة</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Insert into visitStatsSection
+    const statsSection = document.getElementById('visitStatsSection');
+    if (statsSection) {
+        statsSection.innerHTML = statsHTML;
+        statsSection.style.display = 'block';
+    }
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     const savedLang = localStorage.getItem('language');
@@ -390,5 +720,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('submitComment').addEventListener('click', submitComment);
     
     updateLanguage();
-    loadPersonData();
+    loadPersonData().then(() => {
+        // Track visit after page loads
+        trackPageVisit();
+        
+        // Display stats if admin
+        if (isAdmin()) {
+            displayVisitStats();
+        }
+    });
 });

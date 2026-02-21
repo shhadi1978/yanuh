@@ -894,18 +894,86 @@ async function rejectComment(commentId) {
 async function deleteRecord(deathId) {
     if (!confirm('هل أنت متأكد من حذف هذه الوفاة؟ سيتم حذف جميع الصور والتعليقات المرتبطة بها.')) return;
     
-    const { error } = await supabaseClient
-        .from('death')
-        .delete()
-        .eq('death_id', deathId);
-    
-    if (error) {
-        alert('حدث خطأ في الحذف');
-        console.error(error);
-        return;
+    try {
+        // 1. Get all images for this person
+        const { data: images, error: imagesError } = await supabaseAdmin
+            .from('images')
+            .select('url, id')
+            .eq('id_death', deathId);
+        
+        if (imagesError) {
+            console.error('Error fetching images:', imagesError);
+        }
+        
+        // 2. Delete image files from storage
+        if (images && images.length > 0) {
+            for (const image of images) {
+                if (image.url) {
+                    // The url field contains just the filename
+                    const fileName = image.url;
+                    
+                    // Delete from storage
+                    const { error: storageError } = await supabaseAdmin
+                        .storage
+                        .from('photos')
+                        .remove([fileName]);
+                    
+                    if (storageError) {
+                        console.error('Error deleting file from storage:', storageError);
+                    }
+                }
+            }
+        }
+        
+        // 3. Delete all images from images table
+        const { error: deleteImagesError } = await supabaseAdmin
+            .from('images')
+            .delete()
+            .eq('id_death', deathId);
+        
+        if (deleteImagesError) {
+            console.error('Error deleting images:', deleteImagesError);
+        }
+        
+        // 4. Delete all comments
+        const { error: deleteCommentsError } = await supabaseAdmin
+            .from('comments')
+            .delete()
+            .eq('death_id', deathId);
+        
+        if (deleteCommentsError) {
+            console.error('Error deleting comments:', deleteCommentsError);
+        }
+        
+        // 5. Delete all visits
+        const { error: deleteVisitsError } = await supabaseAdmin
+            .from('page_visits')
+            .delete()
+            .eq('death_id', deathId);
+        
+        if (deleteVisitsError) {
+            console.error('Error deleting visits:', deleteVisitsError);
+        }
+        
+        // 6. Finally, delete the death record
+        const { error: deleteDeathError } = await supabaseAdmin
+            .from('death')
+            .delete()
+            .eq('death_id', deathId);
+        
+        if (deleteDeathError) {
+            alert('حدث خطأ في حذف السجل');
+            console.error(deleteDeathError);
+            return;
+        }
+        
+        alert('✅ تم حذف الوفاة وجميع البيانات المرتبطة بها بنجاح!');
+        loadRecords();
+        
+    } catch (error) {
+        alert('حدث خطأ في عملية الحذف');
+        console.error('Delete error:', error);
     }
-    
-    loadRecords();
 }
 
 // Edit record

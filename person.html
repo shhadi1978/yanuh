@@ -101,10 +101,6 @@
         .family-card:active {
             transform: translateY(-2px);
         }
-            margin-bottom: 0.75rem;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
         
         /* Mobile optimizations */
         @media (max-width: 768px) {
@@ -120,8 +116,8 @@
     <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
         <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
             <button onclick="window.history.back()" class="flex items-center gap-2 text-gray-700 hover:text-gray-900 active:scale-95 transition-transform touch-manipulation" style="min-height: 48px; -webkit-tap-highlight-color: transparent;">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
                 <span class="font-semibold" data-ar="رجوع" data-he="חזרה">رجوع</span>
             </button>
@@ -142,7 +138,7 @@
 
         <!-- Photos Gallery -->
         <div class="mb-6">
-            <h3 class="text-xl font-bold mb-4 text-gray-900" data-ar="معرض الصور" data-he="גלריית תמונות">معرض الصور</h3>
+            <h3 class="text-xl font-bold mb-4 text-gray-900 text-right" data-ar="معرض الصور" data-he="גלריית תמונות">معرض الصور</h3>
             <div id="photosGallery" class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <!-- Photos will be loaded here -->
             </div>
@@ -150,7 +146,7 @@
 
         <!-- Family Tree Section -->
         <div class="mb-6">
-            <h3 class="text-xl font-bold mb-4 text-gray-900" data-ar="🌳 شجرة العائلة" data-he="🌳 עץ משפחה">🌳 شجرة العائلة</h3>
+            <h3 class="text-xl font-bold mb-4 text-gray-900 text-right" data-ar="🌳 شجرة العائلة" data-he="🌳 עץ משפחה">🌳 شجرة العائلة</h3>
             <div id="familyTree" class="bg-white rounded-lg shadow-sm p-6">
                 <!-- Family tree will be loaded here -->
                 <div class="animate-pulse">
@@ -167,7 +163,7 @@
 
         <!-- Comments Section -->
         <div class="mb-6">
-            <h3 class="text-xl font-bold mb-4 text-gray-900" data-ar="الذكريات والتعليقات" data-he="זיכרונות ותגובות">الذكريات والتعليقات</h3>
+            <h3 class="text-xl font-bold mb-4 text-gray-900 text-right" data-ar="الذكريات والتعليقات" data-he="זיכרונות ותגובות">الذكريات والتعليقات</h3>
             
             <!-- Add Comment Form -->
             <div class="bg-white rounded-lg shadow-sm p-4 mb-4">

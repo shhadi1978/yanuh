@@ -119,10 +119,26 @@ function displayGenderDistribution() {
 // Display age distribution
 function displayAgeDistribution() {
     const ageGroups = {
-        '0-18': { label: 'أطفال وشباب (0-18)', count: 0, icon: '👶' },
-        '19-40': { label: 'شباب (19-40)', count: 0, icon: '🧑' },
-        '41-65': { label: 'كبار (41-65)', count: 0, icon: '👨' },
-        '66+': { label: 'مسنين (66+)', count: 0, icon: '👴' }
+        '0-18': { 
+            label: 'أطفال وشباب (0-18)', 
+            count: 0, 
+            icon: '<svg class="w-5 h-5 text-blue-500 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+        },
+        '19-40': { 
+            label: 'شباب (19-40)', 
+            count: 0, 
+            icon: '<svg class="w-5 h-5 text-green-500 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>'
+        },
+        '41-65': { 
+            label: 'كبار (41-65)', 
+            count: 0, 
+            icon: '<svg class="w-5 h-5 text-orange-500 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+        },
+        '66+': { 
+            label: 'مسنين (66+)', 
+            count: 0, 
+            icon: '<svg class="w-5 h-5 text-purple-500 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/><path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M6.343 17.657A8 8 0 0112 16"/></svg>'
+        }
     };
     
     allDeceased.forEach(person => {
@@ -146,7 +162,7 @@ function displayAgeDistribution() {
         return `
             <div class="mb-2 md:mb-3">
                 <div class="flex items-center justify-between mb-1 md:mb-2">
-                    <span class="text-gray-700 text-sm md:text-base font-semibold chart-label">${group.icon} ${group.label}</span>
+                    <span class="text-gray-700 text-sm md:text-base font-semibold chart-label flex items-center gap-2">${group.icon} <span>${group.label}</span></span>
                     <span class="text-purple-600 text-sm md:text-base font-bold">${group.count} (${percent}%)</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 md:h-3">

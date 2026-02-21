@@ -417,20 +417,30 @@ function renderCards(data, append = false) {
                 
                 <!-- Info Section -->
                 <div class="p-4 bg-gradient-to-b from-white to-gray-50">
-                    <!-- Birth Date -->
+                    <!-- Birth Date - Icon first, then text -->
                     <div class="mb-3 text-right bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1 font-medium">
-                            ${currentLang === 'ar' ? '📅 تاريخ الولادة' : '📅 תאריך לידה'}
+                        <div class="flex flex-row-reverse items-center justify-end gap-2 mb-1">
+                            <span class="text-xs text-gray-500 font-medium">
+                                ${currentLang === 'ar' ? 'تاريخ الولادة' : 'תאריך לידה'}
+                            </span>
+                            <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                            </svg>
                         </div>
                         <div class="text-sm font-bold text-gray-900" data-birth-year="${person.birth_date ? new Date(person.birth_date).getFullYear() : ''}">
                             ${birthDate}
                         </div>
                     </div>
                     
-                    <!-- Death Date -->
+                    <!-- Death Date - Icon first, then text -->
                     <div class="mb-3 text-right bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
-                        <div class="text-xs text-gray-500 mb-1 font-medium">
-                            ${currentLang === 'ar' ? '🕊️ تاريخ الوفاة' : '🕊️ תאריך פטירה'}
+                        <div class="flex flex-row-reverse items-center justify-end gap-2 mb-1">
+                            <span class="text-xs text-gray-500 font-medium">
+                                ${currentLang === 'ar' ? 'تاريخ الوفاة' : 'תאריך פטירה'}
+                            </span>
+                            <svg class="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                            </svg>
                         </div>
                         <div class="text-sm font-bold text-gray-900" data-death-year="${person.death_date ? new Date(person.death_date).getFullYear() : ''}">
                             ${deathDate}
@@ -438,13 +448,15 @@ function renderCards(data, append = false) {
                     </div>
                     
                     ${timeSinceDeath ? `
-                    <!-- Time Since Death -->
+                    <!-- Time Since Death - Icon first, then text -->
                     <div class="mt-3 bg-gradient-to-r from-purple-50 via-indigo-50 to-blue-50 border-2 border-purple-200 rounded-xl p-3 shadow-md">
-                        <div class="flex items-center justify-end gap-2">
+                        <div class="flex flex-row-reverse items-center justify-end gap-2">
                             <div class="text-right flex-grow">
                                 <div class="text-xs font-bold text-purple-900">${timeSinceDeath.text}</div>
                             </div>
-                            <span class="text-xl">${timeSinceDeath.icon}</span>
+                            <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                            </svg>
                         </div>
                     </div>
                     ` : ''}

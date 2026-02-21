@@ -256,16 +256,27 @@
         
         .nav-item:active {
             background: #f3f4f6;
+            border-radius: 12px;
         }
         
         .nav-item .nav-icon {
-            font-size: 24px;
-            line-height: 1;
-            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        .nav-item.active .nav-icon {
-            transform: scale(1.1);
+        .nav-item .nav-icon svg {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .nav-item:hover .nav-icon svg {
+            transform: translateY(-3px);
+        }
+        
+        .nav-item.active .nav-icon svg {
+            transform: scale(1.15);
+            filter: drop-shadow(0 2px 6px rgba(79, 70, 229, 0.4));
         }
         
         .nav-item .nav-label {
@@ -371,22 +382,38 @@
     <!-- Bottom Navigation (Mobile Only) -->
     <nav class="bottom-nav">
         <a href="index.html" class="nav-item active" id="navHome">
-            <span class="nav-icon">🏠</span>
+            <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+            </span>
             <span class="nav-label" data-ar="الرئيسية" data-he="ראשי">الرئيسية</span>
         </a>
         
         <button class="nav-item" id="navSearch">
-            <span class="nav-icon">🔍</span>
+            <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m2.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </span>
             <span class="nav-label" data-ar="البحث" data-he="חיפוש">البحث</span>
         </button>
         
         <a href="login.html" class="nav-item" id="navAdd">
-            <span class="nav-icon">➕</span>
+            <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </span>
             <span class="nav-label" data-ar="إضافة" data-he="הוספה">إضافة</span>
         </a>
         
         <a href="stats.html" class="nav-item" id="navStats">
-            <span class="nav-icon">📊</span>
+            <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+            </span>
             <span class="nav-label" data-ar="الإحصائيات" data-he="סטטיסטיקה">الإحصائيات</span>
         </a>
     </nav>
@@ -395,7 +422,7 @@
     <div id="searchModal" class="search-modal">
         <div class="search-modal-content" dir="rtl">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-900" data-ar="البحث في السجلات" data-he="חיפוש ברשומות">البحث في السجلات</h3>
+                <h3 class="text-lg font-bold text-gray-900 text-right" data-ar="البحث في السجلات" data-he="חיפוש ברשומות">البحث في السجلات</h3>
                 <div class="flex items-center gap-2">
                     <button id="clearSearch" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors" data-ar="مسح" data-he="נקה">مسح</button>
                     <button id="closeSearch" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">×</button>

@@ -144,11 +144,19 @@
     <header class="bg-white/10 backdrop-blur-md text-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-3 md:px-4 py-3 md:py-4">
             <div class="flex items-center justify-between gap-2">
-                <a href="index.html" class="bg-white/20 hover:bg-white/30 px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-semibold transition">
-                    🏠 <span class="hidden sm:inline">الصفحة الرئيسية</span>
+                <a href="index.html" class="bg-white/20 hover:bg-white/30 px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-semibold transition inline-flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span class="hidden sm:inline">الصفحة الرئيسية</span>
                 </a>
                 <div class="text-right">
-                    <h1 class="text-lg md:text-2xl font-bold">📊 إحصائيات</h1>
+                    <h1 class="text-lg md:text-2xl font-bold inline-flex flex-row-reverse items-center gap-2">
+                        <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        إحصائيات
+                    </h1>
                     <p class="text-xs md:text-sm opacity-90">قرية يانوح</p>
                 </div>
             </div>
@@ -169,31 +177,55 @@
         <!-- Summary Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-4 md:mb-8">
             <!-- Total Deaths -->
-            <div class="stat-card text-center">
-                <div class="text-3xl md:text-5xl mb-2 md:mb-3 stat-icon">👥</div>
-                <div class="stat-number" id="totalDeaths">0</div>
-                <p class="text-gray-600 text-xs md:text-base font-semibold mt-1 md:mt-2">إجمالي الوفيات</p>
+            <div class="stat-card text-right">
+                <div class="flex flex-row-reverse items-center justify-end gap-2 mb-2">
+                    <div class="flex-grow">
+                        <div class="stat-number" id="totalDeaths">0</div>
+                        <p class="text-gray-600 text-xs md:text-base font-semibold mt-1">إجمالي الوفيات</p>
+                    </div>
+                    <svg class="w-12 h-12 md:w-16 md:h-16 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
             </div>
             
             <!-- Males -->
-            <div class="stat-card text-center">
-                <div class="text-3xl md:text-5xl mb-2 md:mb-3 stat-icon">👨</div>
-                <div class="stat-number text-blue-600" id="totalMales">0</div>
-                <p class="text-gray-600 text-xs md:text-base font-semibold mt-1 md:mt-2">ذكور</p>
+            <div class="stat-card text-right">
+                <div class="flex flex-row-reverse items-center justify-end gap-2 mb-2">
+                    <div class="flex-grow">
+                        <div class="stat-number text-blue-600" id="totalMales">0</div>
+                        <p class="text-gray-600 text-xs md:text-base font-semibold mt-1">ذكور</p>
+                    </div>
+                    <svg class="w-12 h-12 md:w-16 md:h-16 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </div>
             </div>
             
             <!-- Females -->
-            <div class="stat-card text-center">
-                <div class="text-3xl md:text-5xl mb-2 md:mb-3 stat-icon">👩</div>
-                <div class="stat-number text-pink-600" id="totalFemales">0</div>
-                <p class="text-gray-600 text-xs md:text-base font-semibold mt-1 md:mt-2">إناث</p>
+            <div class="stat-card text-right">
+                <div class="flex flex-row-reverse items-center justify-end gap-2 mb-2">
+                    <div class="flex-grow">
+                        <div class="stat-number text-pink-600" id="totalFemales">0</div>
+                        <p class="text-gray-600 text-xs md:text-base font-semibold mt-1">إناث</p>
+                    </div>
+                    <svg class="w-12 h-12 md:w-16 md:h-16 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </div>
             </div>
             
             <!-- Average Age -->
-            <div class="stat-card text-center">
-                <div class="text-3xl md:text-5xl mb-2 md:mb-3 stat-icon">📅</div>
-                <div class="stat-number text-green-600" id="avgAge">0</div>
-                <p class="text-gray-600 text-xs md:text-base font-semibold mt-1 md:mt-2">متوسط العمر</p>
+            <div class="stat-card text-right">
+                <div class="flex flex-row-reverse items-center justify-end gap-2 mb-2">
+                    <div class="flex-grow">
+                        <div class="stat-number text-green-600" id="avgAge">0</div>
+                        <p class="text-gray-600 text-xs md:text-base font-semibold mt-1">متوسط العمر</p>
+                    </div>
+                    <svg class="w-12 h-12 md:w-16 md:h-16 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                </div>
             </div>
         </div>
 
@@ -202,7 +234,13 @@
             
             <!-- Gender Distribution -->
             <div class="stat-card">
-                <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">📊 التوزيع حسب الجنس</h3>
+                <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right flex items-center gap-2">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+                        <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+                    </svg>
+                    <span>التوزيع حسب الجنس</span>
+                </h3>
                 <div class="flex flex-col items-center justify-center gap-4 md:gap-6">
                     <!-- Single Pie Chart -->
                     <div class="relative">
@@ -247,7 +285,12 @@
             
             <!-- Age Distribution -->
             <div class="stat-card">
-                <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">👶👴 التوزيع حسب الفئة العمرية</h3>
+                <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right flex items-center gap-2">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <span>التوزيع حسب الفئة العمرية</span>
+                </h3>
                 <div class="space-y-3 md:space-y-4" id="ageDistribution">
                     <!-- Will be populated by JS -->
                 </div>
@@ -256,7 +299,12 @@
 
         <!-- Deaths by Decade -->
         <div class="stat-card mb-4 md:mb-8">
-            <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">📆 الوفيات حسب العقد</h3>
+            <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right flex items-center gap-2">
+                <svg class="w-5 h-5 md:w-6 md:h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>الوفيات حسب العقد</span>
+            </h3>
             <div class="space-y-2 md:space-y-3" id="deathsByDecade">
                 <!-- Will be populated by JS -->
             </div>
@@ -264,7 +312,12 @@
 
         <!-- Deaths by Year -->
         <div class="stat-card mb-4 md:mb-8">
-            <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">📅 الوفيات حسب السنة</h3>
+            <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right flex items-center gap-2">
+                <svg class="w-5 h-5 md:w-6 md:h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>الوفيات حسب السنة</span>
+            </h3>
             <div class="space-y-2 md:space-y-3" id="deathsByYear">
                 <!-- Will be populated by JS -->
             </div>
@@ -272,7 +325,12 @@
 
         <!-- Deaths by Family Name -->
         <div class="stat-card mb-4">
-            <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right">👨‍👩‍👧‍👦 الوفيات حسب اسم العائلة</h3>
+            <h3 class="text-base md:text-xl font-bold text-gray-800 mb-4 md:mb-6 text-right flex items-center gap-2">
+                <svg class="w-5 h-5 md:w-6 md:h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <span>الوفيات حسب اسم العائلة</span>
+            </h3>
             <div class="space-y-2 md:space-y-3" id="deathsByFamily">
                 <!-- Will be populated by JS -->
             </div>

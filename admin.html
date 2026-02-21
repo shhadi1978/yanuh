@@ -158,8 +158,11 @@
                     <button onclick="logout()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition">
                         خروج
                     </button>
-                    <a href="index.html" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition">
-                        الصفحة الرئيسية
+                    <a href="index.html" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition inline-flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        <span>الصفحة الرئيسية</span>
                     </a>
                 </div>
                 <div class="text-right">
@@ -178,8 +181,11 @@
                     <button onclick="logout()" class="flex-1 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg font-semibold transition text-sm">
                         خروج
                     </button>
-                    <a href="index.html" class="flex-1 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg font-semibold transition text-sm text-center">
-                        الرئيسية
+                    <a href="index.html" class="flex-1 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg font-semibold transition text-sm text-center inline-flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        <span>الرئيسية</span>
                     </a>
                 </div>
             </div>
@@ -230,15 +236,15 @@
                             class="w-full px-5 py-4 pr-12 text-right bg-white border-2 border-gray-300 rounded-2xl focus:border-blue-500 focus:outline-none shadow-md text-lg"
                             oninput="searchRecords()"
                         >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute right-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m2.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
                 </div>
                 
                 <button onclick="showAddRecordForm()" class="w-full bg-gradient-to-r from-green-600 to-green-500 active:from-green-700 active:to-green-600 text-white py-5 rounded-2xl font-bold shadow-2xl active:shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 text-lg touch-manipulation">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     إضافة متوفى جديد
                 </button>
@@ -289,38 +295,49 @@
         <div id="tab-visits" class="tab-content hidden">
             <!-- Home Page Stats Section -->
             <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4 text-right">🏠 إحصائيات الصفحة الرئيسية</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <svg class="w-8 h-8 text-cyan-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+                    </svg>
+                    <h2 class="text-2xl font-bold text-gray-900">إحصائيات الصفحة الرئيسية</h2>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Home Today -->
-                    <div class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl p-6 text-white shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-3xl">📅</div>
-                            <div class="text-right">
+                    <div class="bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div class="flex flex-row-reverse items-center justify-end gap-4 mb-4">
+                            <div class="text-right flex-grow">
                                 <div class="text-4xl font-bold" id="homeTodayCount">-</div>
-                                <div class="text-cyan-100 text-sm">زوار اليوم</div>
+                                <div class="text-cyan-100 text-sm font-semibold">زوار اليوم</div>
                             </div>
+                            <svg class="w-10 h-10 text-cyan-100" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
+                            </svg>
                         </div>
                     </div>
 
                     <!-- Home Month -->
-                    <div class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-3xl">📈</div>
-                            <div class="text-right">
+                    <div class="bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div class="flex flex-row-reverse items-center justify-end gap-4 mb-4">
+                            <div class="text-right flex-grow">
                                 <div class="text-4xl font-bold" id="homeMonthCount">-</div>
-                                <div class="text-teal-100 text-sm">زوار الشهر</div>
+                                <div class="text-teal-100 text-sm font-semibold">زوار الشهر</div>
                             </div>
+                            <svg class="w-10 h-10 text-teal-100" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                            </svg>
                         </div>
                     </div>
 
                     <!-- Home Total -->
-                    <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-3xl">🌐</div>
-                            <div class="text-right">
+                    <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div class="flex flex-row-reverse items-center justify-end gap-4 mb-4">
+                            <div class="text-right flex-grow">
                                 <div class="text-4xl font-bold" id="homeTotalCount">-</div>
-                                <div class="text-indigo-100 text-sm">إجمالي الزوار</div>
+                                <div class="text-indigo-100 text-sm font-semibold">إجمالي الزوار</div>
                             </div>
+                            <svg class="w-10 h-10 text-indigo-100" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clip-rule="evenodd"/>
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -328,16 +345,24 @@
 
             <!-- Person Pages Stats Section -->
             <div class="mb-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4 text-right">👥 إحصائيات صفحات المتوفين</h2>
+                <div class="flex items-center gap-3 mb-4">
+                    <svg class="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                    </svg>
+                    <h2 class="text-2xl font-bold text-gray-900">إحصائيات صفحات المتوفين</h2>
+                </div>
                 <div class="grid grid-cols-1 gap-6">
                     <!-- Person Total -->
-                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="text-3xl">👁️</div>
-                            <div class="text-right">
+                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-2xl transition-all duration-300">
+                        <div class="flex flex-row-reverse items-center justify-end gap-4 mb-4">
+                            <div class="text-right flex-grow">
                                 <div class="text-4xl font-bold" id="personTotalCount">-</div>
-                                <div class="text-purple-100 text-sm">إجمالي زوار صفحات المتوفين</div>
+                                <div class="text-purple-100 text-sm font-semibold">إجمالي زوار صفحات المتوفين</div>
                             </div>
+                            <svg class="w-10 h-10 text-purple-100" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -345,7 +370,12 @@
 
             <!-- Most Visited Pages -->
             <div class="bg-white rounded-2xl shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 text-right">🔥 الصفحات الأكثر زيارة</h2>
+                <div class="flex items-center gap-3 mb-6">
+                    <svg class="w-7 h-7 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
+                    </svg>
+                    <h2 class="text-2xl font-bold text-gray-900">الصفحات الأكثر زيارة</h2>
+                </div>
                 <div id="mostVisitedList" class="space-y-3">
                     <!-- Will be loaded dynamically -->
                 </div>

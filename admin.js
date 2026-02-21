@@ -24,7 +24,10 @@ function checkAuth() {
     }
     
     currentUser = JSON.parse(userStr);
-    document.getElementById('adminName').textContent = `مرحباً ${currentUser.username}`;
+    const desktopName = document.getElementById('adminName');
+    const mobileName = document.getElementById('adminNameMobile');
+    if (desktopName) desktopName.textContent = `مرحباً ${currentUser.username}`;
+    if (mobileName) mobileName.textContent = `مرحباً ${currentUser.username}`;
     
     // Initialize inactivity monitoring
     setupInactivityMonitoring();
@@ -101,6 +104,17 @@ function logout() {
     // Clear timers
     if (inactivityTimer) clearTimeout(inactivityTimer);
     if (warningTimer) clearTimeout(warningTimer);
+    
+    // Clear all input fields and textareas in the page
+    document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"])').forEach(input => {
+        input.value = '';
+    });
+    document.querySelectorAll('textarea').forEach(textarea => {
+        textarea.value = '';
+    });
+    document.querySelectorAll('select').forEach(select => {
+        select.selectedIndex = 0;
+    });
     
     window.location.href = 'login.html';
 }
@@ -1303,7 +1317,7 @@ async function saveNewUser(event) {
         return;
     }
     
-    // Hash password (simple bcrypt-like approach - in production use proper backend hashing)
+    // Hash password before storing
     const hashedPassword = await hashPassword(password);
     
     const { error } = await supabaseAdmin
@@ -1417,7 +1431,10 @@ async function updateUser(event, userId) {
         currentUser.username = username;
         currentUser.is_admin = isAdmin;
         sessionStorage.setItem('adminUser', JSON.stringify(currentUser));
-        document.getElementById('adminName').textContent = `مرحباً ${username}`;
+        const desktopName = document.getElementById('adminName');
+        const mobileName = document.getElementById('adminNameMobile');
+        if (desktopName) desktopName.textContent = `مرحباً ${username}`;
+        if (mobileName) mobileName.textContent = `مرحباً ${username}`;
     }
     
     closeModal();

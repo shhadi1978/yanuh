@@ -152,7 +152,8 @@
     <!-- Header -->
     <header class="bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
+            <!-- Desktop View -->
+            <div class="hidden md:flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <button onclick="logout()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-semibold transition">
                         خروج
@@ -166,6 +167,22 @@
                     <p class="text-sm opacity-90" id="adminName">مرحباً</p>
                 </div>
             </div>
+            
+            <!-- Mobile View -->
+            <div class="flex md:hidden flex-col gap-3">
+                <div class="text-right">
+                    <h1 class="text-xl font-bold">لوحة التحكم</h1>
+                    <p class="text-xs opacity-90" id="adminNameMobile">مرحباً</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="logout()" class="flex-1 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg font-semibold transition text-sm">
+                        خروج
+                    </button>
+                    <a href="index.html" class="flex-1 bg-white/20 hover:bg-white/30 px-3 py-2 rounded-lg font-semibold transition text-sm text-center">
+                        الرئيسية
+                    </a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -173,17 +190,21 @@
     <div class="bg-white border-b-2 border-gray-100 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex gap-2 overflow-x-auto">
-                <button onclick="switchTab('records')" class="tab-btn px-6 py-3 whitespace-nowrap active" data-tab="records">
-                    إدارة الوفيات
+                <button onclick="switchTab('records')" class="tab-btn px-4 md:px-6 py-3 whitespace-nowrap active text-sm md:text-base" data-tab="records">
+                    <span class="hidden md:inline">إدارة الوفيات</span>
+                    <span class="md:hidden">الوفيات</span>
                 </button>
-                <button onclick="switchTab('images')" class="tab-btn px-6 py-3 whitespace-nowrap" data-tab="images">
-                    إدارة الصور
+                <button onclick="switchTab('images')" class="tab-btn px-4 md:px-6 py-3 whitespace-nowrap text-sm md:text-base" data-tab="images">
+                    <span class="hidden md:inline">إدارة الصور</span>
+                    <span class="md:hidden">الصور</span>
                 </button>
-                <button onclick="switchTab('comments')" class="tab-btn px-6 py-3 whitespace-nowrap" data-tab="comments">
-                    إدارة التعليقات
+                <button onclick="switchTab('comments')" class="tab-btn px-4 md:px-6 py-3 whitespace-nowrap text-sm md:text-base" data-tab="comments">
+                    <span class="hidden md:inline">إدارة التعليقات</span>
+                    <span class="md:hidden">التعليقات</span>
                 </button>
-                <button onclick="switchTab('users')" class="tab-btn px-6 py-3 whitespace-nowrap" data-tab="users">
-                    👥 إدارة المستخدمين
+                <button onclick="switchTab('users')" class="tab-btn px-4 md:px-6 py-3 whitespace-nowrap text-sm md:text-base" data-tab="users">
+                    <span class="hidden md:inline">👥 إدارة المستخدمين</span>
+                    <span class="md:hidden">👥 المستخدمين</span>
                 </button>
             </div>
         </div>
